@@ -1,0 +1,855 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Verbiq - Simplified AI Text Analysis Pipeline
+  Single Lambda architecture for document upload,
+  analysis, CV parsing and downloadable reports.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    Description: Environment name
+
+  BucketName:
+    Type: String
+    Default: verbiq-bucket
+    Description: Base name for the S3 bucket
+
+  DynamoDBTableName:
+    Type: String
+    Default: VerbiqMetadata
+    Description: Base name for the DynamoDB table
+
+  NotificationEmail:
+    Type: String
+    Description: Email address for notifications
+
+  DocumentParserLayerArn:
+    Type: String
+    Description: ARN of the Lambda Layer containing pypdf2 and python-docx
+
+Resources:
+
+  # ─────────────────────────────────────────
+  # S3 Bucket - single bucket for everything
+  # ─────────────────────────────────────────
+  VerbiqBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${Environment}-${AWS::Region}-${BucketName}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+              - GET
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3000
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ─────────────────────────────────────────
+  # SNS Topic
+  # ─────────────────────────────────────────
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${Environment}-${AWS::Region}-VerbiqNotifications
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref NotificationEmail
+
+  # ─────────────────────────────────────────
+  # DynamoDB Table
+  # ─────────────────────────────────────────
+  MetadataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${Environment}-${AWS::Region}-${DynamoDBTableName}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: fileName
+          AttributeType: S
+      KeySchema:
+        - AttributeName: fileName
+          KeyType: HASH
+
+  # ─────────────────────────────────────────
+  # IAM Role - Single Lambda
+  # ─────────────────────────────────────────
+  VerbiqLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Environment}-${AWS::Region}-VerbiqLambdaRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: VerbiqLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource: !Sub arn:aws:s3:::${Environment}-${AWS::Region}-${BucketName}/*
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: !GetAtt MetadataTable.Arn
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref NotificationTopic
+
+  # ─────────────────────────────────────────
+  # Single Lambda - does everything
+  # ─────────────────────────────────────────
+  VerbiqFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${Environment}-${AWS::Region}-VerbiqProcessor
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt VerbiqLambdaRole.Arn
+      Timeout: 300
+      MemorySize: 512
+      Layers:
+        - !Ref DocumentParserLayerArn
+      Environment:
+        Variables:
+          BUCKET_NAME:       !Sub ${Environment}-${AWS::Region}-${BucketName}
+          SNS_TOPIC_ARN:     !Ref NotificationTopic
+          DDB_TABLE_NAME:    !Sub ${Environment}-${AWS::Region}-${DynamoDBTableName}
+          DDB_PARTITION_KEY: fileName
+          AWS_REGION_NAME:   !Ref AWS::Region
+          ALLOWED_EXTENSIONS: .txt,.pdf,.docx
+          CORS_ALLOW_ORIGIN: '*'
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import os
+          import re
+          import math
+          import io
+          from datetime import datetime
+          from collections import Counter
+          from botocore.exceptions import ClientError
+
+          try:
+              import PyPDF2
+              from docx import Document as DocxDocument
+              PARSERS_AVAILABLE = True
+          except ImportError:
+              PARSERS_AVAILABLE = False
+              print("WARNING: PyPDF2/python-docx not available")
+
+          REGION             = os.environ.get('AWS_REGION_NAME', 'eu-west-3')
+          BUCKET_NAME        = os.environ.get('BUCKET_NAME')
+          SNS_TOPIC_ARN      = os.environ.get('SNS_TOPIC_ARN')
+          DDB_TABLE_NAME     = os.environ.get('DDB_TABLE_NAME')
+          DDB_PARTITION_KEY  = os.environ.get('DDB_PARTITION_KEY', 'fileName')
+          ALLOWED_EXTENSIONS = os.environ.get('ALLOWED_EXTENSIONS', '.txt,.pdf,.docx').split(',')
+          ALLOWED_ORIGINS    = os.environ.get('CORS_ALLOW_ORIGIN', '*').split(',')
+
+          s3 = boto3.client(
+              's3',
+              region_name=REGION,
+              endpoint_url=f'https://s3.{REGION}.amazonaws.com'
+          )
+          sns      = boto3.client('sns',        region_name=REGION)
+          dynamodb = boto3.resource('dynamodb', region_name=REGION)
+
+          STOP_WORDS = set([
+              'a','an','the','and','or','but','in','on','at','to','for','of','with',
+              'by','from','is','was','are','were','be','been','being','have','has',
+              'had','do','does','did','will','would','could','should','may','might',
+              'this','that','these','those','i','you','he','she','it','we','they',
+              'me','him','her','us','them','my','your','his','its','our','their',
+              'what','which','who','when','where','how','all','each','every','both',
+              'not','no','so','if','as','up','out','about','into','than','then',
+              'just','also','more','some','can','its','s','t','re','ve','ll','d',
+              'was','been','being','do','did','does','done','get','got','make',
+              'made','said','say','go','going','gone','come','came','take','took'
+          ])
+
+          # ─────────────────────────────────────────
+          # CORS Headers
+          # ─────────────────────────────────────────
+          def get_cors_headers(event):
+              origin = event.get('headers', {}).get('origin') or event.get('headers', {}).get('Origin', '')
+              allowed_origin = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
+              return {
+                  'Access-Control-Allow-Origin': allowed_origin,
+                  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                  'Access-Control-Allow-Methods': 'POST,OPTIONS',
+                  'Vary': 'Origin'
+              }
+
+          # ─────────────────────────────────────────
+          # Document Parsers
+          # ─────────────────────────────────────────
+          def extract_text_from_pdf(file_path):
+              text = ''
+              try:
+                  with open(file_path, 'rb') as f:
+                      reader = PyPDF2.PdfReader(f)
+                      for page in reader.pages:
+                          page_text = page.extract_text()
+                          if page_text:
+                              text += page_text + '\n'
+              except Exception as e:
+                  print(f"PDF extraction error: {str(e)}")
+              return text.strip()
+
+          def extract_text_from_docx(file_path):
+              text = ''
+              try:
+                  doc = DocxDocument(file_path)
+                  for para in doc.paragraphs:
+                      if para.text.strip():
+                          text += para.text + '\n'
+              except Exception as e:
+                  print(f"DOCX extraction error: {str(e)}")
+              return text.strip()
+
+          def extract_text(file_path, filename):
+              ext = filename.lower().split('.')[-1]
+              if ext == 'pdf' and PARSERS_AVAILABLE:
+                  return extract_text_from_pdf(file_path)
+              elif ext == 'docx' and PARSERS_AVAILABLE:
+                  return extract_text_from_docx(file_path)
+              else:
+                  with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                      return f.read()
+
+          # ─────────────────────────────────────────
+          # Language Detection
+          # ─────────────────────────────────────────
+          def detect_language(text):
+              sample = text.lower()[:2000]
+              lang_markers = {
+                  'English':    ['the','and','is','in','to','of','a','that','it','with'],
+                  'French':     ['le','la','les','et','est','en','un','une','des','que'],
+                  'Spanish':    ['el','la','los','las','es','en','un','una','que','de'],
+                  'German':     ['der','die','das','und','ist','in','ein','eine','mit','ich'],
+                  'Portuguese': ['o','a','os','as','e','em','um','uma','que','de'],
+              }
+              words = set(re.findall(r'\b\w+\b', sample))
+              scores = {lang: sum(1 for m in markers if m in words) for lang, markers in lang_markers.items()}
+              return max(scores, key=scores.get)
+
+          # ─────────────────────────────────────────
+          # TextRank Summary
+          # ─────────────────────────────────────────
+          def textrank_summary(text, num_sentences=4):
+              sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+              sentences = [s.strip() for s in sentences if len(s.strip()) > 20]
+              if len(sentences) <= num_sentences:
+                  return ' '.join(sentences)
+              def sentence_words(s):
+                  return set(re.findall(r'\b[a-zA-Z]{3,}\b', s.lower())) - STOP_WORDS
+              word_freq = Counter()
+              for s in sentences:
+                  word_freq.update(sentence_words(s))
+              scores = {}
+              for i, s in enumerate(sentences):
+                  words = sentence_words(s)
+                  scores[i] = sum(word_freq[w] for w in words) / (len(words) + 1)
+              top_indices = sorted(sorted(scores, key=scores.get, reverse=True)[:num_sentences])
+              return ' '.join(sentences[i] for i in top_indices)
+
+          # ─────────────────────────────────────────
+          # TF-IDF Keyword Extraction
+          # ─────────────────────────────────────────
+          def extract_keywords_tfidf(text, top_n=12):
+              sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+              all_words = re.findall(r'\b[a-zA-Z]{3,}\b', text.lower())
+              filtered  = [w for w in all_words if w not in STOP_WORDS]
+              tf        = Counter(filtered)
+              total     = len(filtered)
+              results   = []
+              for word, count in tf.most_common(top_n * 2):
+                  doc_freq = sum(1 for s in sentences if word in s.lower())
+                  tfidf    = (count / total) * math.log((len(sentences) + 1) / (doc_freq + 1))
+                  results.append({'word': word, 'count': count, 'score': round(tfidf, 4)})
+              results.sort(key=lambda x: x['score'], reverse=True)
+              return results[:top_n]
+
+          # ─────────────────────────────────────────
+          # Readability
+          # ─────────────────────────────────────────
+          def count_syllables(word):
+              word = word.lower().strip(".:;?!")
+              if len(word) <= 3: return 1
+              return max(1, len(re.findall(r'[aeiouy]+', word)))
+
+          def calculate_readability(word_count, sent_count, syllables):
+              if sent_count == 0 or word_count == 0: return 0
+              score = 206.835 - 1.015 * (word_count / sent_count) - 84.6 * (syllables / word_count)
+              return round(max(0, min(100, score)), 1)
+
+          def get_readability_label(score):
+              if score >= 90: return 'Very Easy'
+              if score >= 70: return 'Easy'
+              if score >= 60: return 'Standard'
+              if score >= 50: return 'Fairly Difficult'
+              if score >= 30: return 'Difficult'
+              return 'Very Difficult'
+
+          # ─────────────────────────────────────────
+          # CV Parser
+          # ─────────────────────────────────────────
+          def parse_cv(text):
+              cv_data = {
+                  'is_cv': False, 'name': None, 'email': None,
+                  'phone': None, 'linkedin': None, 'github': None,
+                  'skills': [], 'experience': [], 'education': []
+              }
+              cv_keywords = ['experience','education','skills','resume','curriculum',
+                            'employment','qualification','objective','profile','references']
+              text_lower = text.lower()
+              if sum(1 for kw in cv_keywords if kw in text_lower) < 2:
+                  return cv_data
+              cv_data['is_cv'] = True
+              lines = [l.strip() for l in text.split('\n') if l.strip()]
+              email_match = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', text)
+              if email_match: cv_data['email'] = email_match.group()
+              phone_match = re.search(r'(\+?\d[\d\s\-().]{7,}\d)', text)
+              if phone_match: cv_data['phone'] = phone_match.group().strip()
+              linkedin_match = re.search(r'linkedin\.com/in/[\w\-]+', text, re.IGNORECASE)
+              if linkedin_match: cv_data['linkedin'] = linkedin_match.group()
+              github_match = re.search(r'github\.com/[\w\-]+', text, re.IGNORECASE)
+              if github_match: cv_data['github'] = github_match.group()
+              for line in lines[:5]:
+                  if (not re.search(r'[@\d]', line) and
+                      len(line.split()) <= 5 and len(line) > 3 and line[0].isupper()):
+                      cv_data['name'] = line
+                      break
+              skill_keywords = [
+                  'python','javascript','java','typescript','react','node','aws','azure','gcp',
+                  'docker','kubernetes','sql','mongodb','postgresql','git','linux','html','css',
+                  'machine learning','deep learning','tensorflow','pytorch','spark','hadoop',
+                  'excel','powerpoint','word','tableau','power bi','r','scala','go','rust',
+                  'project management','agile','scrum','communication','leadership','teamwork',
+                  'c++','c#','.net','spring','django','flask','fastapi','graphql','rest','api'
+              ]
+              cv_data['skills'] = list(dict.fromkeys([s for s in skill_keywords if s in text_lower]))[:20]
+              exp_section = re.search(
+                  r'(?:experience|employment|work history)[:\s]*\n(.*?)(?:education|skills|references|\Z)',
+                  text, re.IGNORECASE | re.DOTALL)
+              if exp_section:
+                  cv_data['experience'] = [l.strip() for l in exp_section.group(1).split('\n') if l.strip()][:6]
+              edu_section = re.search(
+                  r'(?:education|academic|qualification)[:\s]*\n(.*?)(?:experience|skills|references|\Z)',
+                  text, re.IGNORECASE | re.DOTALL)
+              if edu_section:
+                  cv_data['education'] = [l.strip() for l in edu_section.group(1).split('\n') if l.strip()][:4]
+              return cv_data
+
+          # ─────────────────────────────────────────
+          # HTML Report Generator
+          # ─────────────────────────────────────────
+          def generate_html_report(filename, analysis, cv_data):
+              keywords_html = ''.join(
+                  f'<span class="tag">{k["word"]} <small>{k["count"]}x</small></span>'
+                  for k in analysis['keywords']
+              )
+              readability_color = (
+                  '#27ae60' if analysis['readability_score'] >= 70
+                  else '#e67e22' if analysis['readability_score'] >= 50
+                  else '#e74c3c'
+              )
+              cv_section = ''
+              if cv_data.get('is_cv'):
+                  skills_html = ''.join(f'<span class="tag skill">{s}</span>' for s in cv_data.get('skills', []))
+                  exp_html    = ''.join(f'<li>{e}</li>' for e in cv_data.get('experience', []))
+                  edu_html    = ''.join(f'<li>{e}</li>' for e in cv_data.get('education', []))
+                  cv_section  = f"""
+                  <div class="section">
+                      <h2>👤 CV Profile</h2>
+                      <table class="cv-table">
+                          {'<tr><td>Name</td><td>' + cv_data['name'] + '</td></tr>' if cv_data.get('name') else ''}
+                          {'<tr><td>Email</td><td>' + cv_data['email'] + '</td></tr>' if cv_data.get('email') else ''}
+                          {'<tr><td>Phone</td><td>' + cv_data['phone'] + '</td></tr>' if cv_data.get('phone') else ''}
+                          {'<tr><td>LinkedIn</td><td>' + cv_data['linkedin'] + '</td></tr>' if cv_data.get('linkedin') else ''}
+                          {'<tr><td>GitHub</td><td>' + cv_data['github'] + '</td></tr>' if cv_data.get('github') else ''}
+                      </table>
+                      {'<h3>Skills</h3><div class="tags">' + skills_html + '</div>' if cv_data.get('skills') else ''}
+                      {'<h3>Experience</h3><ul>' + exp_html + '</ul>' if cv_data.get('experience') else ''}
+                      {'<h3>Education</h3><ul>' + edu_html + '</ul>' if cv_data.get('education') else ''}
+                  </div>"""
+              return f"""<!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8"/>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+              <title>Verbiq Report - {filename}</title>
+              <style>
+                  * {{ margin:0; padding:0; box-sizing:border-box; }}
+                  body {{ font-family:Arial,sans-serif; background:#f5f5f5; padding:40px 20px; color:#333; }}
+                  .report {{ max-width:800px; margin:0 auto; background:white; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.1); }}
+                  .header {{ background:#1a1a2e; color:white; padding:32px 40px; }}
+                  .logo {{ font-size:28px; font-weight:900; letter-spacing:-1px; margin-bottom:6px; }}
+                  .logo span {{ color:#e67e22; }}
+                  .subtitle {{ font-size:13px; color:#aaa; }}
+                  .meta {{ font-size:13px; color:#ccc; margin-top:12px; }}
+                  .body {{ padding:32px 40px; }}
+                  .section {{ margin-bottom:32px; border-bottom:1px solid #f0f0f0; padding-bottom:24px; }}
+                  .section:last-child {{ border-bottom:none; }}
+                  .section h2 {{ font-size:16px; color:#1a1a2e; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.5px; }}
+                  .section h3 {{ font-size:13px; color:#888; margin:12px 0 8px; text-transform:uppercase; }}
+                  .stats-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }}
+                  .stat {{ background:#f8f9fa; border-radius:8px; padding:16px; border-left:4px solid #e67e22; }}
+                  .stat-value {{ font-size:28px; font-weight:bold; color:#1a1a2e; }}
+                  .stat-label {{ font-size:11px; color:#888; margin-top:4px; text-transform:uppercase; }}
+                  .readability-bar-bg {{ background:#eee; border-radius:10px; height:12px; margin-top:8px; }}
+                  .readability-bar {{ height:12px; border-radius:10px; background:{readability_color}; width:{analysis['readability_score']}%; }}
+                  .readability-info {{ display:flex; justify-content:space-between; font-size:11px; color:#aaa; margin-top:4px; }}
+                  .tags {{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }}
+                  .tag {{ background:#fff3e0; color:#e67e22; border:1px solid #e67e22; border-radius:20px; padding:4px 12px; font-size:12px; }}
+                  .tag.skill {{ background:#e8f4f8; color:#2980b9; border-color:#2980b9; }}
+                  .tag small {{ color:#aaa; margin-left:4px; font-size:10px; }}
+                  .summary {{ background:#f8f9fa; border-radius:8px; padding:16px; font-size:14px; line-height:1.8; border-left:4px solid #3498db; color:#444; }}
+                  .language-badge {{ display:inline-block; background:#1a1a2e; color:white; border-radius:20px; padding:6px 16px; font-size:14px; font-weight:bold; }}
+                  .cv-table {{ width:100%; border-collapse:collapse; margin-top:8px; }}
+                  .cv-table td {{ padding:8px 12px; border-bottom:1px solid #f0f0f0; font-size:13px; }}
+                  .cv-table td:first-child {{ font-weight:bold; color:#888; width:100px; text-transform:uppercase; font-size:11px; }}
+                  ul {{ padding-left:20px; }}
+                  ul li {{ font-size:13px; color:#555; margin-bottom:4px; line-height:1.6; }}
+                  .footer {{ text-align:center; padding:20px; background:#f8f9fa; font-size:12px; color:#aaa; }}
+                  @media print {{ body {{ background:white; padding:0; }} .report {{ box-shadow:none; border-radius:0; }} }}
+              </style>
+          </head>
+          <body>
+          <div class="report">
+              <div class="header">
+                  <div class="logo">Ver<span>biq</span></div>
+                  <div class="subtitle">Text Analysis Report</div>
+                  <div class="meta">
+                      📄 {filename} &nbsp;|&nbsp;
+                      📅 {datetime.utcnow().strftime('%d %b %Y %H:%M')} UTC &nbsp;|&nbsp;
+                      🌍 {analysis['language']}
+                  </div>
+              </div>
+              <div class="body">
+                  <div class="section">
+                      <h2>📊 Document Statistics</h2>
+                      <div class="stats-grid">
+                          <div class="stat"><div class="stat-value">{analysis['word_count']:,}</div><div class="stat-label">Words</div></div>
+                          <div class="stat"><div class="stat-value">{analysis['character_count']:,}</div><div class="stat-label">Characters</div></div>
+                          <div class="stat"><div class="stat-value">{analysis['unique_words']:,}</div><div class="stat-label">Unique Words</div></div>
+                          <div class="stat"><div class="stat-value">{analysis['reading_time']}</div><div class="stat-label">Reading Time</div></div>
+                      </div>
+                  </div>
+                  <div class="section">
+                      <h2>🌍 Language</h2>
+                      <span class="language-badge">{analysis['language']}</span>
+                  </div>
+                  <div class="section">
+                      <h2>📖 Readability</h2>
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
+                          <strong style="color:{readability_color}">{analysis['readability_label']}</strong>
+                          <span style="font-size:13px; color:#888;">Score: {analysis['readability_score']}/100</span>
+                      </div>
+                      <div class="readability-bar-bg"><div class="readability-bar"></div></div>
+                      <div class="readability-info"><span>Very Difficult</span><span>Very Easy</span></div>
+                  </div>
+                  <div class="section">
+                      <h2>📝 Summary</h2>
+                      <div class="summary">{analysis['summary']}</div>
+                  </div>
+                  <div class="section">
+                      <h2>🔑 Top Keywords</h2>
+                      <div class="tags">{keywords_html}</div>
+                  </div>
+                  {cv_section}
+              </div>
+              <div class="footer">Generated by <strong>Verbiq</strong> - Powered by AWS</div>
+          </div>
+          </body>
+          </html>"""
+
+          # ─────────────────────────────────────────
+          # Core Analysis
+          # ─────────────────────────────────────────
+          def analyze_text(text):
+              words       = re.findall(r'\b\w+\b', text)
+              sentences   = [s for s in re.split(r'(?<=[.!?])\s+', text.strip()) if s.strip()]
+              paragraphs  = [p for p in text.split('\n\n') if p.strip()]
+              syllables   = sum(count_syllables(w) for w in words)
+              word_count  = len(words)
+              sent_count  = len(sentences)
+              readability = calculate_readability(word_count, sent_count, syllables)
+              return {
+                  'word_count':        word_count,
+                  'character_count':   len(text),
+                  'unique_words':      len(set(w.lower() for w in words)),
+                  'paragraph_count':   len(paragraphs),
+                  'reading_time':      f"{math.ceil(word_count / 200)} min read",
+                  'language':          detect_language(text),
+                  'keywords':          extract_keywords_tfidf(text),
+                  'summary':           textrank_summary(text),
+                  'readability_score': readability,
+                  'readability_label': get_readability_label(readability)
+              }
+
+          # ─────────────────────────────────────────
+          # Main Handler - single Lambda does all
+          # ─────────────────────────────────────────
+          def lambda_handler(event, context):
+              print(f"Event: {json.dumps(event)}")
+              CORS_HEADERS = get_cors_headers(event)
+              path = event.get('resource', event.get('path', ''))
+
+              if event.get('httpMethod') == 'OPTIONS':
+                  return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps('OK')}
+
+              try:
+                  body = json.loads(event['body'])
+
+                  # ── Download route ──
+                  if '/download' in path:
+                      key = body.get('key')
+                      if not key:
+                          return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'key is required'})}
+                      download_url = s3.generate_presigned_url(
+                          'get_object',
+                          Params={'Bucket': BUCKET_NAME, 'Key': key},
+                          ExpiresIn=300
+                      )
+                      return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'download_url': download_url})}
+
+                  # ── Upload route - get presigned URL ──
+                  if '/upload' in path:
+                      filename     = body.get('filename')
+                      content_type = body.get('contentType', 'application/octet-stream')
+                      if not filename:
+                          return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'filename is required'})}
+                      if not any(filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS):
+                          return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': f'Invalid file type. Allowed: {ALLOWED_EXTENSIONS}'})}
+                      presigned_url = s3.generate_presigned_url(
+                          'put_object',
+                          Params={'Bucket': BUCKET_NAME, 'Key': f'uploads/{filename}', 'ContentType': content_type},
+                          ExpiresIn=300
+                      )
+                      return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': json.dumps({'upload_url': presigned_url, 'filename': filename, 'expires_in': '5 minutes'})}
+
+                  # ── Analyse route - full processing ──
+                  if '/analyse' in path:
+                      filename     = body.get('filename')
+                      content_type = body.get('contentType', 'application/octet-stream')
+
+                      if not filename:
+                          return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'filename is required'})}
+
+                      # Download from S3
+                      local_path = f'/tmp/{filename}'
+                      s3.download_file(BUCKET_NAME, f'uploads/{filename}', local_path)
+
+                      # Extract text
+                      text = extract_text(local_path, filename)
+                      if not text.strip():
+                          return {'statusCode': 400, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Could not extract text from file'})}
+
+                      # Analyse
+                      analysis = analyze_text(text)
+                      cv_data  = parse_cv(text)
+
+                      # Save JSON
+                      json_key = f'results/analysis-{filename}.json'
+                      s3.put_object(
+                          Bucket=BUCKET_NAME,
+                          Key=json_key,
+                          Body=json.dumps({**analysis, 'cv_data': cv_data}, indent=2),
+                          ContentType='application/json'
+                      )
+
+                      # Save HTML report
+                      html_key    = f'results/report-{filename}.html'
+                      html_report = generate_html_report(filename, analysis, cv_data)
+                      s3.put_object(
+                          Bucket=BUCKET_NAME,
+                          Key=html_key,
+                          Body=html_report,
+                          ContentType='text/html'
+                      )
+
+                      # DynamoDB
+                      table = dynamodb.Table(DDB_TABLE_NAME)
+                      table.put_item(Item={
+                          DDB_PARTITION_KEY:  filename,
+                          'WordCount':        analysis['word_count'],
+                          'Language':         analysis['language'],
+                          'ReadabilityScore': str(analysis['readability_score']),
+                          'ReadabilityLabel': analysis['readability_label'],
+                          'ReadingTime':      analysis['reading_time'],
+                          'IsCV':             str(cv_data['is_cv']),
+                          'ProcessedAt':      datetime.utcnow().isoformat()
+                      })
+
+                      # SNS
+                      cv_info = ''
+                      if cv_data['is_cv']:
+                          cv_info = (
+                              f"\n\nCV Detected!"
+                              f"\nName: {cv_data.get('name', 'Not found')}"
+                              f"\nEmail: {cv_data.get('email', 'Not found')}"
+                              f"\nSkills: {', '.join(cv_data.get('skills', [])[:8])}"
+                          )
+                      sns.publish(
+                          TopicArn=SNS_TOPIC_ARN,
+                          Message=(
+                              f"Verbiq Analysis Complete\n\n"
+                              f"File: {filename}\n"
+                              f"Words: {analysis['word_count']:,}\n"
+                              f"Language: {analysis['language']}\n"
+                              f"Readability: {analysis['readability_label']} ({analysis['readability_score']}/100)\n"
+                              f"Reading time: {analysis['reading_time']}\n\n"
+                              f"Top keywords: {', '.join(k['word'] for k in analysis['keywords'][:5])}\n\n"
+                              f"Summary: {analysis['summary'][:300]}"
+                              f"{cv_info}"
+                          ),
+                          Subject='Verbiq - Analysis Complete'
+                      )
+
+                      return {
+                          'statusCode': 200,
+                          'headers': CORS_HEADERS,
+                          'body': json.dumps({
+                              **analysis,
+                              'cv_data':        cv_data,
+                              'report_key':     html_key,
+                              'json_key':       json_key
+                          })
+                      }
+
+                  return {'statusCode': 404, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Route not found'})}
+
+              except ClientError as e:
+                  print(f"ClientError: {str(e)}")
+                  return {'statusCode': 500, 'headers': CORS_HEADERS, 'body': json.dumps({'error': str(e)})}
+              except Exception as e:
+                  print(f"Unexpected error: {str(e)}")
+                  import traceback
+                  traceback.print_exc()
+                  return {'statusCode': 500, 'headers': CORS_HEADERS, 'body': json.dumps({'error': str(e)})}
+
+  # ─────────────────────────────────────────
+  # API Gateway
+  # ─────────────────────────────────────────
+  VerbiqApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${Environment}-${AWS::Region}-VerbiqApi
+      Description: Verbiq API
+
+  UploadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ParentId: !GetAtt VerbiqApi.RootResourceId
+      PathPart: upload
+
+  AnalyseResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ParentId: !GetAtt VerbiqApi.RootResourceId
+      PathPart: analyse
+
+  DownloadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ParentId: !GetAtt VerbiqApi.RootResourceId
+      PathPart: download
+
+  # ── Upload Methods ──
+  UploadPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ResourceId: !Ref UploadResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${VerbiqFunction.Arn}/invocations
+
+  UploadOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ResourceId: !Ref UploadResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+
+  # ── Analyse Methods ──
+  AnalysePostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ResourceId: !Ref AnalyseResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${VerbiqFunction.Arn}/invocations
+
+  AnalyseOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ResourceId: !Ref AnalyseResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+
+  # ── Download Methods ──
+  DownloadPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ResourceId: !Ref DownloadResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${VerbiqFunction.Arn}/invocations
+
+  DownloadOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      ResourceId: !Ref DownloadResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+
+  # ── Lambda Permissions ──
+  UploadPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt VerbiqFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${VerbiqApi}/*/POST/upload
+
+  AnalysePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt VerbiqFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${VerbiqApi}/*/POST/analyse
+
+  DownloadPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt VerbiqFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${VerbiqApi}/*/POST/download
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - UploadPostMethod
+      - UploadOptionsMethod
+      - AnalysePostMethod
+      - AnalyseOptionsMethod
+      - DownloadPostMethod
+      - DownloadOptionsMethod
+    Properties:
+      RestApiId: !Ref VerbiqApi
+      StageName: !Ref Environment
+
+# ─────────────────────────────────────────
+# Outputs
+# ─────────────────────────────────────────
+Outputs:
+  UploadUrl:
+    Description: Verbiq Upload URL
+    Value: !Sub https://${VerbiqApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/upload
+
+  AnalyseUrl:
+    Description: Verbiq Analyse URL
+    Value: !Sub https://${VerbiqApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/analyse
+
+  DownloadUrl:
+    Description: Verbiq Download URL
+    Value: !Sub https://${VerbiqApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/download
+
+  BucketName:
+    Description: Verbiq S3 bucket name
+    Value: !Sub ${Environment}-${AWS::Region}-${BucketName}
+
+  DynamoDBTableName:
+    Description: DynamoDB table name
+    Value: !Sub ${Environment}-${AWS::Region}-${DynamoDBTableName}
+
+  Region:
+    Description: Deployed region
+    Value: !Ref AWS::Region
