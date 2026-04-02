@@ -51,13 +51,11 @@ Resources:
         Rules:
           - Id: DeleteUploadsAfter1Day
             Status: Enabled
-            Filter:
-              Prefix: uploads/
+            Prefix: uploads/
             ExpirationInDays: 1
           - Id: DeleteResultsAfter7Days
             Status: Enabled
-            Filter:
-              Prefix: results/
+            Prefix: results/
             ExpirationInDays: 7
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
