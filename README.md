@@ -10,7 +10,7 @@ Verbiq is a serverless AI-powered text analysis platform that delivers instant i
 
 🌐 **Live at:** https://verbiq.pages.dev
 
-### ✨ Features
+## ✨ Features
 - 📊 **Readability Insights** — word count, reading time, readability score
 - 🌍 **Language Detection** — automatic language identification
 - 🧠 **AI Summarisation** — TextRank-based summaries
@@ -19,12 +19,16 @@ Verbiq is a serverless AI-powered text analysis platform that delivers instant i
 - 📥 **Export Reports** — downloadable HTML reports
 - 📁 **Multi-format Support** — TXT, PDF, DOCX
 
-## Architecture
-- **Frontend:** Cloudflare Pages (free)
-- **API:** AWS API Gateway + Lambda (free tier)
-- **Storage:** S3 with auto-delete TTL (free tier)
-- **Database:** DynamoDB with TTL (free tier)
-- **Notifications:** SNS email (free tier)
+## 🏗️ Architecture
+
+Fully serverless, cost-efficient, and scalable:
+
+- **Frontend**: Cloudflare Pages
+- **API Layer**: AWS API Gateway
+- **Compute**: AWS Lambda
+- **Storage**: Amazon S3 (TTL auto-cleanup)
+- **Database**: DynamoDB (TTL enabled)
+- **Notifications**: SNS (email alerts)
 
 ## Deployment
 
