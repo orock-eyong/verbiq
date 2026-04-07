@@ -29,10 +29,10 @@ Built for:
 ## ⚡Key Features
 - 📊 Readability Analytics
 Word count, reading time, and readability scoring
-_ 🧠 AI Summarisation
+- 🧠 AI Summarisation
 Extractive summaries powered by TextRank
 - 🔑 Keyword Extraction
-TF-IDF based key phrase detection
+-   TF-IDF based key phrase detection
 - 🌍 Language Detection
 Automatic identification of document language
 - 📄 CV Parsing Engine
