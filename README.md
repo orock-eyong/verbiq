@@ -45,7 +45,7 @@ Copy the Layer ARN from the output.
 - **2**. Create a new stack using:
   -  infrastructure/verbiq-template.yaml
 -  **3**. Provide required parameters (including Layer ARN)
--  *4**. Wait for CREATE_COMPLETE
+-  **4**. Wait for CREATE_COMPLETE
 
 ### Step 3 - Update Frontend
 
