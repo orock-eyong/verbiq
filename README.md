@@ -88,14 +88,7 @@ verbiq/
 - 🌐 Custom domain (verbiq.com)
 - 📊 Dashboard analytics
 
-## 📁 Project Structure
 
-| File                                  | Description               |
-| ------------------------------------- | ------------------------- |
-| `index.html`                          | Frontend application      |
-| `infrastructure/verbiq-template.yaml` | AWS infrastructure (IaC)  |
-| `scripts/build-layer.sh`              | Lambda layer build script |
-| `README.md`                           | Project documentation     |
 
 ## 📜 License
 
