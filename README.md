@@ -32,7 +32,7 @@ Fully serverless, cost-efficient, and scalable:
 
 ## ⚙️ Deployment Guide
 
-1. ### Build Lambda Layer
+### 1. Build Lambda Layer
 Open AWS CloudShell in eu-west-3 and run:
 
 ```bash
