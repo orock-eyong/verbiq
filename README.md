@@ -58,3 +58,14 @@ Data	Auto-deleted after
 Uploaded files (S3)	1 day
 Analysis reports (S3)	7 days
 Metadata (DynamoDB)	7 days
+
+
+## Summary
+
+| File | Purpose |
+|---|---|
+| `index.html` | The entire frontend |
+| `infrastructure/verbiq-template.yaml` | Everything AWS |
+| `scripts/build-layer.sh` | Layer rebuild script |
+| `README.md` | Deployment instructions |
+
