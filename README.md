@@ -66,10 +66,10 @@ Push to GitHub → Cloudflare auto-deploys.
 | Analysis reports (S3) | 7 days    |
 | Metadata (DynamoDB)   | 7 days    |
 
-### Roadmap
-- Phase 2: Amazon Comprehend for sentiment and entity extraction
-- Phase 3: Cognito for user authentication
-- Phase 4: Custom domain verbiq.com
+🗺️ Roadmap
+- Phase 2 — Sentiment & entity analysis (Amazon Comprehend)
+- Phase 3 — User authentication (Cognito)
+- Phase 4 — Custom domain (verbiq.com)
 
 ## Summary
 
