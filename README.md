@@ -46,6 +46,6 @@ Copy the Layer ARN from the output.
 Copy the three URLs from the CloudFormation Outputs tab and
 update these lines in index.html:
 
-const UPLOAD_URL   = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/upload";
-const ANALYSE_URL  = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/analyse";
-const DOWNLOAD_URL = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/download";
+- const UPLOAD_URL   = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/upload";
+- const ANALYSE_URL  = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/analyse";
+- const DOWNLOAD_URL = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/download";
