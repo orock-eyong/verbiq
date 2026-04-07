@@ -6,7 +6,7 @@
 ![S3](https://img.shields.io/badge/AWS-S3-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-Instant document analysis for students, recruiters and content creators.
+Verbiq is a serverless AI-powered text analysis platform that delivers instant insights from documents—built for students, recruiters, and content creators.
 
 🌐 **Live at:** https://verbiq.pages.dev
 
