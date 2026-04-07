@@ -56,7 +56,7 @@ Built for:
 
   ### 🖼️ Demo Preview
 
-  ![Demo](./docs/demo.gif)
+  ![verbiq](./docs/demo.gif)
 
 ## 🏗️ Architecture
 
