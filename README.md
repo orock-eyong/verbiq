@@ -10,14 +10,14 @@ Instant document analysis for students, recruiters and content creators.
 
 🌐 **Live at:** https://verbiq.pages.dev
 
-## Features
-- Word count, reading time, readability score
-- Language detection
-- AI-powered summary (TextRank)
-- Keyword extraction (TF-IDF)
-- CV parsing (name, email, phone, skills, experience)
-- Downloadable HTML report
-- Supports TXT, PDF, DOCX
+✨ Features
+📊 Readability Insights — word count, reading time, readability score
+🌍 Language Detection — automatic language identification
+🧠 AI Summarisation — TextRank-based summaries
+🔑 Keyword Extraction — TF-IDF powered key phrase detection
+📄 CV Parsing — extract name, email, phone, skills, and experience
+📥 Export Reports — downloadable HTML reports
+📁 Multi-format Support — TXT, PDF, DOCX
 
 ## Architecture
 - **Frontend:** Cloudflare Pages (free)
