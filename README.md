@@ -32,8 +32,7 @@ Instant document analysis for students, recruiters and content creators.
 Open AWS CloudShell in eu-west-3 and run:
 ```bash
 bash scripts/build-layer.sh
-
-
+---
 
 Copy the Layer ARN from the output.
 
