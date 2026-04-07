@@ -32,17 +32,4 @@ Instant document analysis for students, recruiters and content creators.
 Open AWS CloudShell in eu-west-3 and run:
 ```bash
 bash scripts/build-layer.sh
----
 
-Copy the Layer ARN from the output.
-
-### Step 2 - Deploy CloudFormation Stack
-1. Go to CloudFormation in eu-west-3
-2. Create stack using infrastructure/verbiq-template.yaml
-3. Fill in parameters including the Layer ARN from Step 1
-4 Wait for CREATE_COMPLETE
-
-### Step 3 - Update Frontend
-
-Copy the three URLs from the CloudFormation Outputs tab and
-update these lines in index.html:
