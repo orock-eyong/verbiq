@@ -16,18 +16,36 @@
 ![S3](https://img.shields.io/badge/AWS-S3-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-Verbiq is a serverless AI-powered text analysis platform that delivers instant insights from documents—built for students, recruiters, and content creators.
+### ✨ What is Verbiq?
 
-🌐 **Live at:** https://verbiq.pages.dev
+Verbiq is a fully serverless AI text analysis platform that extracts meaningful insights from documents in seconds.
 
-## ✨ Features
-- 📊 **Readability Insights** — word count, reading time, readability score
-- 🌍 **Language Detection** — automatic language identification
-- 🧠 **AI Summarisation** — TextRank-based summaries
-- 🔑 **Keyword Extraction** — TF-IDF powered key phrase detection
-- 📄 **CV Parsing** — extract name, email, phone, skills, and experience
-- 📥 **Export Reports** — downloadable HTML reports
-- 📁 **Multi-format Support** — TXT, PDF, DOCX
+Built for:
+
+- 🎓 Students analysing academic material
+- 💼 Recruiters screening CVs
+- ✍️ Content creators refining readability
+
+## ⚡Key Features
+- 📊 Readability Analytics
+Word count, reading time, and readability scoring
+_ 🧠 AI Summarisation
+Extractive summaries powered by TextRank
+- 🔑 Keyword Extraction
+TF-IDF based key phrase detection
+- 🌍 Language Detection
+Automatic identification of document language
+- 📄 CV Parsing Engine
+Extract:
+Name
+Email
+Phone
+Skills
+Experience
+- 📥 Exportable Reports
+Download clean HTML reports
+- 📁 Multi-format Support
+  TXT · PDF · DOCX
 
 ## 🏗️ Architecture
 
