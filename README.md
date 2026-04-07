@@ -11,13 +11,13 @@ Verbiq is a serverless AI-powered text analysis platform that delivers instant i
 🌐 **Live at:** https://verbiq.pages.dev
 
 ### ✨ Features
-- 📊 Readability Insights — word count, reading time, readability score
-- 🌍 Language Detection — automatic language identification
-- 🧠 AI Summarisation — TextRank-based summaries
-- 🔑 Keyword Extraction — TF-IDF powered key phrase detection
-- 📄 CV Parsing — extract name, email, phone, skills, and experience
-- 📥 Export Reports — downloadable HTML reports
-- 📁 Multi-format Support — TXT, PDF, DOCX
+- 📊 **Readability Insights** — word count, reading time, readability score
+- 🌍 **Language Detection** — automatic language identification
+- 🧠 **AI Summarisation** — TextRank-based summaries
+- 🔑 **Keyword Extraction** — TF-IDF powered key phrase detection
+- 📄 **CV Parsing** — extract name, email, phone, skills, and experience
+- 📥 **Export Reports** — downloadable HTML reports
+- 📁 **Multi-format Support** — TXT, PDF, DOCX
 
 ## Architecture
 - **Frontend:** Cloudflare Pages (free)
