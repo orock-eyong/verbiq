@@ -3,9 +3,11 @@
 
 <img src="./docs/banner.png" alt="Verbiq Banner" width="100%"/>
 
+<br/>
+
 <b>Turn raw documents into actionable insights — instantly.</b>
 
-<br/><br/>
+<br/>
 
 <a href="https://verbiq.pages.dev"><strong>🚀 Try Live Demo</strong></a>
 
