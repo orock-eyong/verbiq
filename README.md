@@ -82,10 +82,11 @@ verbiq/
 └── README.md
 ```
 
-🗺️ Roadmap
-- Phase 2 — Sentiment & entity analysis (Amazon Comprehend)
-- Phase 3 — User authentication (Cognito)
-- Phase 4 — Custom domain (verbiq.com)
+## 🗺️ Roadmap
+- 🔍 Sentiment & entity analysis (Amazon Comprehend)
+- 🔐 User authentication (Cognito)
+- 🌐 Custom domain (verbiq.com)
+- 📊 Dashboard analytics
 
 ## 📁 Project Structure
 
@@ -96,3 +97,7 @@ verbiq/
 | `scripts/build-layer.sh`              | Lambda layer build script |
 | `README.md`                           | Project documentation     |
 
+## 📜 License
+
+Licensed under the Apache License, Version 2.0
+http://www.apache.org/licenses/
