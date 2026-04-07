@@ -59,6 +59,10 @@ Uploaded files (S3)	1 day
 Analysis reports (S3)	7 days
 Metadata (DynamoDB)	7 days
 
+### Roadmap
+- Phase 2: Amazon Comprehend for sentiment and entity extraction
+- Phase 3: Cognito for user authentication
+- Phase 4: Custom domain verbiq.com
 
 ## Summary
 
