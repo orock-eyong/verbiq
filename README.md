@@ -26,7 +26,7 @@ Built for:
 - 💼 Recruiters screening CVs
 - ✍️ Content creators refining readability
 
-# ⚡ Key Features
+## ⚡ Key Features
 
 - 📊 **Readability Analytics**  
   Word count, reading time, and readability scoring
