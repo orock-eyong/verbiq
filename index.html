@@ -1,543 +1,274 @@
 <!DOCTYPE html>
-
-<!--
-  Verbiq - AI Text Analysis Portal
-  Copyright 2026 Linus Orock Eyong
-  Licensed under the Apache License, Version 2.0
-  https://github.com/orock-eyong/verbiq
--->
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Verbiq - AI Text Analysis</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Verbiq - AI Text Analysis</title>
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 40px 20px;
-    }
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
 
-    .container {
-      background: white;
-      border-radius: 12px;
-      padding: 40px;
-      width: 100%;
-      max-width: 720px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:linear-gradient(135deg,#eef2ff,#f8fafc);
+  display:flex;
+  justify-content:center;
+  padding:20px 16px;
+}
 
-    .header { text-align: center; margin-bottom: 30px; }
+.container{
+  width:100%;
+  max-width:720px;
+  background:rgba(255,255,255,0.9);
+  backdrop-filter:blur(12px);
+  border-radius:16px;
+  padding:26px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.08);
+}
 
-    .logo {
-      font-size: 52px;
-      font-weight: 900;
-      color: #1a1a2e;
-      letter-spacing: -2px;
-      margin-bottom: 6px;
-    }
+/* Header */
+.header{text-align:center;margin-bottom:14px;}
+.logo{font-size:40px;font-weight:900;color:#111;}
+.logo span{color:#e67e22;}
+.tagline{font-size:13px;color:#6b7280;margin:6px 0 10px;}
 
-    .logo span { color: #e67e22; }
-    .tagline { font-size: 13px; color: #888; margin-bottom: 16px; }
+.badges{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;}
+.badge{background:#f3f4f6;padding:4px 10px;border-radius:20px;font-size:11px;}
 
-    .badges {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+/* Demo */
+.demo{margin-top:10px;}
+.demo img{width:100%;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
 
-    .badge {
-      background: #f0f2f5;
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 11px;
-      color: #555;
-    }
+/* Upload */
+.upload-area{
+  border:2px dashed #d1d5db;
+  border-radius:12px;
+  padding:26px;
+  text-align:center;
+  margin:14px 0;
+  background:#fafafa;
+  transition:.25s;
+  position:relative;
+}
+.upload-area:hover{border-color:#e67e22;background:#fffaf5;transform:translateY(-2px);}
+.upload-area.dragover{border-color:#e67e22;background:#fff8f0;}
 
-    .upload-area {
-      border: 2px dashed #ccc;
-      border-radius: 10px;
-      padding: 40px 20px;
-      text-align: center;
-      transition: all 0.3s ease;
-      margin: 24px 0 20px;
-      background: #fafafa;
-      position: relative;
-    }
+.upload-icon{font-size:34px;margin-bottom:6px;}
+.upload-area h3{font-size:15px;}
+.upload-area p{font-size:12px;color:#888;}
+.allowed{font-size:11px;color:#e67e22;margin-top:4px;}
 
-    .upload-area.dragover { border-color: #e67e22; background: #fff8f0; }
-    .upload-icon { font-size: 48px; margin-bottom: 12px; pointer-events: none; }
-    .upload-area h3 { color: #333; margin-bottom: 8px; font-size: 16px; pointer-events: none; }
-    .upload-area p { color: #999; font-size: 13px; pointer-events: none; }
-    .upload-area .allowed { margin-top: 10px; font-size: 12px; color: #e67e22; font-weight: bold; pointer-events: none; }
+#fileInput{
+  position:absolute;width:100%;height:100%;
+  top:0;left:0;opacity:0;cursor:pointer;
+}
 
-    #fileInput {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      opacity: 0; cursor: pointer;
-    }
+/* Buttons */
+.btn{
+  width:100%;padding:13px;border:none;
+  border-radius:10px;font-weight:bold;
+  cursor:pointer;margin-top:8px;
+}
+.btn-primary{
+  background:#e67e22;color:white;
+  box-shadow:0 6px 16px rgba(230,126,34,0.25);
+}
+.btn-primary:hover{background:#d35400;}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed;}
 
-    .btn {
-      width: 100%; padding: 14px; border: none;
-      border-radius: 8px; font-size: 16px;
-      font-weight: bold; cursor: pointer;
-      transition: all 0.3s ease; margin-top: 10px;
-    }
+.btn-secondary{background:#111;color:white;}
 
-    .btn-primary { background: #e67e22; color: white; }
-    .btn-primary:hover:not(:disabled) { background: #d35400; }
-    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-secondary { background: #1a1a2e; color: white; }
-    .btn-secondary:hover { background: #2c2c54; }
+/* File */
+.file-info{
+  display:none;
+  background:#f9fafb;
+  padding:10px;border-radius:8px;
+  font-size:13px;margin-bottom:10px;
+}
+.file-info.visible{display:block;}
 
-    .file-info {
-      background: #f8f9fa; border-radius: 8px;
-      padding: 12px 16px; margin-bottom: 10px;
-      display: none; align-items: center; gap: 10px;
-    }
-    .file-info.visible { display: flex; }
-    .file-info .name { font-size: 13px; color: #333; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .file-info .remove { cursor: pointer; color: #e74c3c; font-size: 18px; font-weight: bold; background: none; border: none; padding: 0 4px; }
+/* Progress */
+.progress-container{display:none;margin:10px 0;}
+.progress-container.visible{display:block;}
+.progress-bar-bg{height:8px;background:#eee;border-radius:10px;}
+.progress-bar{height:100%;background:#e67e22;width:0%;border-radius:10px;}
 
-    .progress-container { display: none; margin: 15px 0; }
-    .progress-container.visible { display: block; }
-    .progress-label { font-size: 13px; color: #555; margin-bottom: 6px; }
-    .progress-bar-bg { background: #eee; border-radius: 10px; height: 10px; overflow: hidden; }
-    .progress-bar { height: 100%; background: #e67e22; border-radius: 10px; width: 0%; transition: width 0.4s ease; }
+/* Status */
+.status{display:none;margin-top:10px;padding:12px;border-radius:8px;font-size:13px;}
+.status.visible{display:block;}
+.status.success{background:#eafaf1;color:#27ae60;}
+.status.error{background:#fdf2f2;color:#e74c3c;}
+.status.loading{background:#fff4e5;color:#e67e22;}
 
-    .status { margin-top: 20px; padding: 14px; border-radius: 8px; font-size: 14px; text-align: center; display: none; line-height: 1.6; }
-    .status.visible { display: block; }
-    .status.success { background: #eafaf1; color: #27ae60; border: 1px solid #27ae60; }
-    .status.error   { background: #fdf2f2; color: #e74c3c; border: 1px solid #e74c3c; }
-    .status.loading { background: #fdf3e8; color: #e67e22; border: 1px solid #e67e22; }
+/* Results */
+.results-panel{display:none;margin-top:18px;}
+.results-panel.visible{display:block;}
 
-    .results-panel { display: none; margin-top: 30px; border-top: 2px solid #f0f0f0; padding-top: 24px; }
-    .results-panel.visible { display: block; }
-    .results-title { font-size: 18px; color: #1a1a2e; margin-bottom: 20px; text-align: center; font-weight: bold; }
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;
+}
+.stat-card{
+  background:#f9fafb;
+  padding:14px;border-radius:10px;text-align:center;
+}
+.stat-value{font-size:20px;font-weight:bold;}
+.stat-label{font-size:10px;color:#888;}
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background: #f8f9fa; border-radius: 10px;
-      padding: 16px 12px; text-align: center;
-      border-left: 4px solid #e67e22;
-    }
-
-    .stat-value { font-size: 26px; font-weight: bold; color: #1a1a2e; }
-    .stat-label { font-size: 11px; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .section { margin-bottom: 24px; }
-    .section h3 { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .language-badge { display: inline-block; background: #1a1a2e; color: white; border-radius: 20px; padding: 6px 16px; font-size: 14px; font-weight: bold; }
-
-    .readability-bar-bg { background: #eee; border-radius: 10px; height: 12px; overflow: hidden; margin-top: 8px; }
-    .readability-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
-    .readability-info { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 4px; }
-
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag { background: #fff3e0; color: #e67e22; border: 1px solid #e67e22; border-radius: 20px; padding: 4px 12px; font-size: 12px; }
-    .tag small { color: #aaa; font-size: 10px; margin-left: 4px; }
-    .tag.skill { background: #e8f4f8; color: #2980b9; border-color: #2980b9; }
-
-    .summary-box { background: #f8f9fa; border-radius: 8px; padding: 16px; font-size: 14px; color: #444; line-height: 1.8; border-left: 4px solid #3498db; }
-
-    .cv-panel {
-      background: #f8f9fa; border-radius: 10px;
-      padding: 20px; border-left: 4px solid #27ae60;
-    }
-
-    .cv-row { display: flex; gap: 12px; margin-bottom: 8px; font-size: 13px; }
-    .cv-label { font-weight: bold; color: #888; text-transform: uppercase; font-size: 11px; min-width: 80px; padding-top: 1px; }
-    .cv-value { color: #333; flex: 1; }
-
-    .download-bar {
-      display: flex; gap: 10px; margin-top: 24px;
-      padding-top: 20px; border-top: 1px solid #f0f0f0;
-    }
-
-    .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #aaa; }
-  </style>
+.footer{text-align:center;font-size:11px;color:#aaa;margin-top:16px;}
+</style>
 </head>
+
 <body>
 <div class="container">
 
-  <div class="header">
-    <div class="logo">Ver<span>biq</span></div>
-    <div class="tagline">Instant AI-powered document analysis</div>
-    <div class="badges">
-      <span class="badge">📚 Essays</span>
-      <span class="badge">📄 CVs</span>
-      <span class="badge">✍️ Articles</span>
-      <span class="badge">📊 Reports</span>
-      <span class="badge">📑 PDF</span>
-      <span class="badge">📝 DOCX</span>
-    </div>
+<div class="header">
+  <div class="logo">Ver<span>biq</span></div>
+  <div class="tagline">Instant AI-powered document analysis</div>
+
+  <div class="badges">
+    <span class="badge">📚 Essays</span>
+    <span class="badge">📄 CVs</span>
+    <span class="badge">✍️ Articles</span>
+    <span class="badge">📊 Reports</span>
   </div>
 
-  <div class="upload-area" id="dropZone">
-    <div class="upload-icon">📂</div>
-    <h3>Drag & Drop your document here</h3>
-    <p>or click to browse your computer</p>
-    <div class="allowed">Allowed: .txt .pdf .docx</div>
-    <input type="file" id="fileInput" accept=".txt,.pdf,.docx"/>
+  <!-- 🔥 Put your GIF file in same folder -->
+  <div class="demo">
+    <img src="verbiq_animated_demo.gif" alt="Demo">
   </div>
+</div>
 
-  <div class="file-info" id="fileInfo">
-    <span>📄</span>
-    <span class="name" id="fileName">No file selected</span>
-    <button class="remove" onclick="removeFile()">✕</button>
+<div class="upload-area" id="dropZone">
+  <div class="upload-icon">📂</div>
+  <h3>Drop your document</h3>
+  <p>or click to browse</p>
+  <div class="allowed">.txt .pdf .docx</div>
+  <input type="file" id="fileInput" accept=".txt,.pdf,.docx"/>
+</div>
+
+<div class="file-info" id="fileInfo"></div>
+
+<div class="progress-container" id="progressContainer">
+  <div class="progress-bar-bg">
+    <div class="progress-bar" id="progressBar"></div>
   </div>
+</div>
 
-  <div class="progress-container" id="progressContainer">
-    <div class="progress-label" id="progressLabel">Uploading...</div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-  </div>
+<button class="btn btn-primary" id="uploadBtn" onclick="uploadAndAnalyse()" disabled>
+  Analyse Document
+</button>
 
-  <button class="btn btn-primary" id="uploadBtn" onclick="uploadAndAnalyse()" disabled>
-    🔍 Analyse Document
-  </button>
+<div class="status" id="status"></div>
 
-  <div class="status" id="status"></div>
+<div class="results-panel" id="resultsPanel">
+  <div class="stats-grid" id="statsGrid"></div>
+</div>
 
-  <div class="results-panel" id="resultsPanel">
-    <div class="results-title">📊 Analysis Results</div>
-
-    <div class="stats-grid" id="statsGrid"></div>
-
-    <div class="section">
-      <h3>🌍 Detected Language</h3>
-      <span class="language-badge" id="languageBadge"></span>
-    </div>
-
-    <div class="section">
-      <h3>📖 Readability</h3>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="readabilityLabel" style="font-size:14px; font-weight:bold;"></span>
-        <span id="readabilityScore" style="font-size:13px; color:#888;"></span>
-      </div>
-      <div class="readability-bar-bg">
-        <div class="readability-bar" id="readabilityBar"></div>
-      </div>
-      <div class="readability-info"><span>Very Difficult</span><span>Very Easy</span></div>
-    </div>
-
-    <div class="section">
-      <h3>📝 AI Summary</h3>
-      <div class="summary-box" id="summaryBox"></div>
-    </div>
-
-    <div class="section">
-      <h3>🔑 Top Keywords</h3>
-      <div class="tags" id="keywordsContainer"></div>
-    </div>
-
-    <div class="section" id="cvSection" style="display:none;">
-      <h3>👤 CV Profile Detected</h3>
-      <div class="cv-panel" id="cvPanel"></div>
-    </div>
-
-    <div class="download-bar">
-      <button class="btn btn-secondary" onclick="downloadReport()" style="flex:1;">
-        ⬇️ Download Full Report
-      </button>
-      <button class="btn btn-primary" onclick="analyseAnother()" style="flex:1;">
-        🔍 Analyse Another
-      </button>
-    </div>
-  </div>
-
-  <div class="footer">
-    🔒 Files are securely processed and never stored permanently<br>
-    <strong style="color:#e67e22;">Verbiq</strong> - Powered by AWS
-  </div>
+<div class="footer">
+  🔒 Secure processing • Not stored
+</div>
 
 </div>
 
 <script>
-  const UPLOAD_URL   = "https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/upload";
-  const ANALYSE_URL  = "https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/analyse";
-  const DOWNLOAD_URL = "https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/download";
+const UPLOAD_URL="https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/upload";
+const ANALYSE_URL="https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/analyse";
 
-  let selectedFile  = null;
-  let reportKey     = null;
+let selectedFile=null;
 
-  // ─── File Input ───
-  document.getElementById('fileInput').addEventListener('change', function(e) {
-    if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-  });
+document.getElementById('fileInput').addEventListener('change',e=>{
+  selectedFile=e.target.files[0];
+  document.getElementById('fileInfo').classList.add('visible');
+  document.getElementById('fileInfo').textContent=selectedFile.name;
+  document.getElementById('uploadBtn').disabled=false;
+});
 
-  // ─── Drag and Drop ───
-  const dropZone = document.getElementById('dropZone');
+/* Drag & Drop */
+const dropZone=document.getElementById('dropZone');
 
-  ['dragenter','dragover','dragleave','drop'].forEach(evt => {
-    document.body.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
-  });
+['dragenter','dragover','dragleave','drop'].forEach(evt=>{
+  document.body.addEventListener(evt,e=>{e.preventDefault();});
+});
 
-  dropZone.addEventListener('dragenter', () => dropZone.classList.add('dragover'));
-  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
-  });
+dropZone.addEventListener('drop',e=>{
+  selectedFile=e.dataTransfer.files[0];
+  document.getElementById('fileInfo').classList.add('visible');
+  document.getElementById('fileInfo').textContent=selectedFile.name;
+  document.getElementById('uploadBtn').disabled=false;
+});
 
-  // ─── Handle File Selection ───
-  function handleFileSelect(file) {
-    if (!file) return;
-    const allowed = ['.txt', '.pdf', '.docx'];
-    const ext = '.' + file.name.split('.').pop().toLowerCase();
-    if (!allowed.includes(ext)) {
-      showStatus(`❌ Invalid file type "${ext}". Allowed: ${allowed.join(', ')}`, 'error');
-      return;
-    }
-    selectedFile = file;
-    document.getElementById('fileName').textContent = `${file.name} (${formatSize(file.size)})`;
-    document.getElementById('fileInfo').classList.add('visible');
-    document.getElementById('uploadBtn').disabled = false;
-    document.getElementById('resultsPanel').classList.remove('visible');
-    reportKey = null;
-    hideStatus();
+/* MAIN FLOW */
+async function uploadAndAnalyse(){
+  if(!selectedFile)return;
+
+  showStatus("⏳ Processing...","loading");
+  showProgress(20);
+
+  try{
+    // Step 1: get upload URL
+    const uploadRes=await fetch(UPLOAD_URL,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({filename:selectedFile.name})
+    });
+
+    const uploadData=await uploadRes.json();
+
+    showProgress(50);
+
+    // Step 2: upload file
+    await fetch(uploadData.upload_url,{
+      method:"PUT",
+      body:selectedFile
+    });
+
+    showProgress(75);
+
+    // Step 3: analyse
+    const analyseRes=await fetch(ANALYSE_URL,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({filename:selectedFile.name})
+    });
+
+    const analysis=await analyseRes.json();
+
+    showProgress(100);
+    showStatus("✅ Analysis complete","success");
+
+    renderResults(analysis);
+
+  }catch(err){
+    showStatus("❌ Failed: "+err.message,"error");
   }
+}
 
-  // ─── Remove File ───
-  function removeFile() {
-    selectedFile = null;
-    reportKey    = null;
-    document.getElementById('fileInput').value = '';
-    document.getElementById('fileInfo').classList.remove('visible');
-    document.getElementById('uploadBtn').disabled = true;
-    document.getElementById('progressContainer').classList.remove('visible');
-    document.getElementById('resultsPanel').classList.remove('visible');
-    hideStatus();
-  }
+/* Render */
+function renderResults(data){
+  document.getElementById('resultsPanel').classList.add('visible');
 
-  // ─── Analyse Another ───
-  function analyseAnother() {
-    removeFile();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-value">${data.word_count}</div><div class="stat-label">Words</div></div>
+    <div class="stat-card"><div class="stat-value">${data.character_count}</div><div class="stat-label">Characters</div></div>
+    <div class="stat-card"><div class="stat-value">${data.unique_words}</div><div class="stat-label">Unique</div></div>
+    <div class="stat-card"><div class="stat-value">${data.reading_time}</div><div class="stat-label">Reading</div></div>
+  `;
+}
 
-  // ─── Main Upload and Analyse ───
-  async function uploadAndAnalyse() {
-    if (!selectedFile) { showStatus('❌ Please select a file first', 'error'); return; }
+/* UI helpers */
+function showStatus(msg,type){
+  const el=document.getElementById('status');
+  el.innerHTML=msg;
+  el.className=`status visible ${type}`;
+}
 
-    const btn = document.getElementById('uploadBtn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Analysing...';
-
-    const contentType = getContentType(selectedFile.name);
-
-    try {
-
-      // Step 1 - Get pre-signed upload URL
-      showStatus('⏳ Step 1/3 — Requesting secure upload URL...', 'loading');
-      showProgress('Requesting upload URL...', 15);
-
-      const uploadUrlResponse = await fetch(UPLOAD_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: selectedFile.name, contentType })
-      });
-
-      const uploadData = await uploadUrlResponse.json();
-      if (!uploadUrlResponse.ok || !uploadData.upload_url) {
-        throw new Error(uploadData.error || `Upload URL error: ${uploadUrlResponse.status}`);
-      }
-
-      // Step 2 - Upload file directly to S3
-      showStatus('⏳ Step 2/3 — Uploading your document...', 'loading');
-      showProgress('Uploading...', 40);
-
-      const s3Response = await fetch(uploadData.upload_url, {
-        method: 'PUT',
-        headers: { 'Content-Type': contentType },
-        body: selectedFile
-      });
-
-      if (!s3Response.ok) throw new Error(`S3 upload failed: ${s3Response.status}`);
-
-      // Step 3 - Trigger analysis
-      showStatus('⏳ Step 3/3 — Analysing your document...', 'loading');
-      showProgress('Analysing...', 70);
-
-      const analyseResponse = await fetch(ANALYSE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: selectedFile.name, contentType })
-      });
-
-      const analysis = await analyseResponse.json();
-      if (!analyseResponse.ok) throw new Error(analysis.error || `Analysis error: ${analyseResponse.status}`);
-
-      // Store report key for download
-      reportKey = analysis.report_key;
-
-      showProgress('Complete! ✅', 100);
-      showStatus(`✅ <strong>${selectedFile.name}</strong> analysed successfully!`, 'success');
-      renderResults(analysis);
-
-      btn.textContent = '🔍 Analyse Document';
-      btn.disabled = false;
-
-    } catch (error) {
-      console.error('Error:', error);
-      showStatus(`❌ Failed: ${error.message}<br><br>💡 Please try again.`, 'error');
-      btn.disabled = false;
-      btn.textContent = '🔍 Analyse Document';
-    }
-  }
-
-  // ─── Download Report ───
-  async function downloadReport() {
-    if (!reportKey) { alert('No report available yet.'); return; }
-
-    try {
-      const response = await fetch(DOWNLOAD_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: reportKey })
-      });
-
-      const data = await response.json();
-      if (!data.download_url) throw new Error('Could not get report URL');
-
-      const htmlResponse = await fetch(data.download_url);
-      const htmlContent  = await htmlResponse.text();
-      const blob         = new Blob([htmlContent], { type: 'text/html' });
-      const url          = URL.createObjectURL(blob);
-      const a            = document.createElement('a');
-      a.href             = url;
-      a.download         = `verbiq-report-${selectedFile ? selectedFile.name : 'document'}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-    } catch (error) {
-      alert(`Download failed: ${error.message}`);
-    }
-  }
-
-  // ─── Render Results ───
-  function renderResults(analysis) {
-    const panel = document.getElementById('resultsPanel');
-
-    // Stats
-    document.getElementById('statsGrid').innerHTML = [
-      { value: analysis.word_count.toLocaleString(),      label: 'Words' },
-      { value: analysis.character_count.toLocaleString(), label: 'Characters' },
-      { value: analysis.unique_words.toLocaleString(),    label: 'Unique Words' },
-      { value: analysis.reading_time,                     label: 'Reading Time' },
-    ].map(s => `
-      <div class="stat-card">
-        <div class="stat-value">${s.value}</div>
-        <div class="stat-label">${s.label}</div>
-      </div>
-    `).join('');
-
-    // Language
-    document.getElementById('languageBadge').textContent = analysis.language;
-
-    // Readability
-    const score = analysis.readability_score;
-    const color = score >= 70 ? '#27ae60' : score >= 50 ? '#e67e22' : '#e74c3c';
-    document.getElementById('readabilityLabel').textContent = analysis.readability_label;
-    document.getElementById('readabilityLabel').style.color = color;
-    document.getElementById('readabilityScore').textContent = `Score: ${score}/100`;
-    document.getElementById('readabilityBar').style.width      = `${score}%`;
-    document.getElementById('readabilityBar').style.background = color;
-
-    // Summary
-    document.getElementById('summaryBox').textContent = analysis.summary;
-
-    // Keywords
-    document.getElementById('keywordsContainer').innerHTML = analysis.keywords
-      .map(k => `<span class="tag">${k.word}<small>${k.count}x</small></span>`)
-      .join('');
-
-    // CV Section
-    const cvData    = analysis.cv_data;
-    const cvSection = document.getElementById('cvSection');
-    const cvPanel   = document.getElementById('cvPanel');
-
-    if (cvData && cvData.is_cv) {
-      const skillsHtml = (cvData.skills || [])
-        .map(s => `<span class="tag skill">${s}</span>`).join('');
-      const expHtml = (cvData.experience || [])
-        .map(e => `<li style="font-size:13px;color:#555;margin-bottom:4px;">${e}</li>`).join('');
-      const eduHtml = (cvData.education || [])
-        .map(e => `<li style="font-size:13px;color:#555;margin-bottom:4px;">${e}</li>`).join('');
-
-      cvPanel.innerHTML = `
-        <div style="font-size:13px;font-weight:bold;color:#27ae60;margin-bottom:12px;">✅ CV / Resume Detected</div>
-        ${cvData.name     ? `<div class="cv-row"><span class="cv-label">Name</span><span class="cv-value">${cvData.name}</span></div>` : ''}
-        ${cvData.email    ? `<div class="cv-row"><span class="cv-label">Email</span><span class="cv-value">${cvData.email}</span></div>` : ''}
-        ${cvData.phone    ? `<div class="cv-row"><span class="cv-label">Phone</span><span class="cv-value">${cvData.phone}</span></div>` : ''}
-        ${cvData.linkedin ? `<div class="cv-row"><span class="cv-label">LinkedIn</span><span class="cv-value">${cvData.linkedin}</span></div>` : ''}
-        ${cvData.github   ? `<div class="cv-row"><span class="cv-label">GitHub</span><span class="cv-value">${cvData.github}</span></div>` : ''}
-        ${skillsHtml      ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Skills</div><div class="tags">${skillsHtml}</div></div>` : ''}
-        ${expHtml         ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Experience</div><ul style="padding-left:16px;">${expHtml}</ul></div>` : ''}
-        ${eduHtml         ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Education</div><ul style="padding-left:16px;">${eduHtml}</ul></div>` : ''}
-      `;
-      cvSection.style.display = 'block';
-    } else {
-      cvSection.style.display = 'none';
-    }
-
-    panel.classList.add('visible');
-    panel.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  // ─── Helpers ───
-  function getContentType(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const map = {
-      'txt':  'text/plain',
-      'pdf':  'application/pdf',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    };
-    return map[ext] || 'application/octet-stream';
-  }
-
-  function showStatus(message, type) {
-    const el = document.getElementById('status');
-    el.innerHTML = message;
-    el.className = `status visible ${type}`;
-  }
-
-  function hideStatus() {
-    document.getElementById('status').className = 'status';
-    document.getElementById('progressContainer').classList.remove('visible');
-  }
-
-  function showProgress(label, percent) {
-    document.getElementById('progressContainer').classList.add('visible');
-    document.getElementById('progressLabel').textContent = label;
-    document.getElementById('progressBar').style.width   = percent + '%';
-  }
-
-  function formatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
+function showProgress(val){
+  document.getElementById('progressContainer').classList.add('visible');
+  document.getElementById('progressBar').style.width=val+"%";
+}
 </script>
+
 </body>
 </html>
