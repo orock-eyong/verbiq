@@ -50,11 +50,11 @@ Copy the Layer ARN from the output.
 ### 3 - Update Frontend
 
 Update API endpoints in index.html:
-
+```bash
 const UPLOAD_URL   = "https://YOUR_API/upload";
 const ANALYSE_URL  = "https://YOUR_API/analyse";
 const DOWNLOAD_URL = "https://YOUR_API/download";
-
+```
 Commit to GitHub and Cloudflare auto-deploys in 30 seconds.
 
 ### TTL Settings
