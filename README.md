@@ -47,14 +47,13 @@ Copy the Layer ARN from the output.
 -  **3**. Provide required parameters (including Layer ARN)
 -  **4**. Wait for CREATE_COMPLETE
 
-### Step 3 - Update Frontend
+### 3 - Update Frontend
 
-Copy the three URLs from the CloudFormation Outputs tab and
-update these lines in index.html:
+Update API endpoints in index.html:
 
-- const UPLOAD_URL   = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/upload";
-- const ANALYSE_URL  = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/analyse";
-- const DOWNLOAD_URL = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/download";
+const UPLOAD_URL   = "https://YOUR_API/upload";
+const ANALYSE_URL  = "https://YOUR_API/analyse";
+const DOWNLOAD_URL = "https://YOUR_API/download";
 
 Commit to GitHub and Cloudflare auto-deploys in 30 seconds.
 
