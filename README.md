@@ -26,25 +26,32 @@ Built for:
 - 💼 Recruiters screening CVs
 - ✍️ Content creators refining readability
 
-## ⚡Key Features
-- 📊 Readability Analytics
-Word count, reading time, and readability scoring
-- 🧠 AI Summarisation
-Extractive summaries powered by TextRank
-- 🔑 Keyword Extraction
--   TF-IDF based key phrase detection
-- 🌍 Language Detection
-Automatic identification of document language
-- 📄 CV Parsing Engine
-Extract:
-Name
-Email
-Phone
-Skills
-Experience
-- 📥 Exportable Reports
-Download clean HTML reports
-- 📁 Multi-format Support
+# ⚡ Key Features
+
+- 📊 **Readability Analytics**  
+  Word count, reading time, and readability scoring
+
+- 🧠 **AI Summarisation**  
+  Extractive summaries powered by TextRank
+
+- 🔑 **Keyword Extraction**  
+  TF-IDF based key phrase detection
+
+- 🌍 **Language Detection**  
+  Automatic identification of document language
+
+- 📄 **CV Parsing Engine**  
+  Extract:  
+  - Name  
+  - Email  
+  - Phone  
+  - Skills  
+  - Experience
+
+- 📥 **Exportable Reports**  
+  Download clean HTML reports
+
+- 📁 **Multi-format Support**  
   TXT · PDF · DOCX
 
 ## 🏗️ Architecture
