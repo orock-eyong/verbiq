@@ -49,3 +49,12 @@ update these lines in index.html:
 - const UPLOAD_URL   = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/upload";
 - const ANALYSE_URL  = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/analyse";
 - const DOWNLOAD_URL = "https://YOUR_API.execute-api.eu-west-3.amazonaws.com/prod/download";
+
+Commit to GitHub and Cloudflare auto-deploys in 30 seconds.
+
+### TTL Settings
+
+Data	Auto-deleted after
+Uploaded files (S3)	1 day
+Analysis reports (S3)	7 days
+Metadata (DynamoDB)	7 days
