@@ -72,6 +72,7 @@ Push to GitHub → Cloudflare auto-deploys.
 
 ## 📁 Project Structure
 
+ ```bash
 verbiq/
 ├── index.html
 ├── infrastructure/
@@ -79,6 +80,7 @@ verbiq/
 ├── scripts/
 │   └── build-layer.sh
 └── README.md
+```
 
 🗺️ Roadmap
 - Phase 2 — Sentiment & entity analysis (Amazon Comprehend)
