@@ -1,181 +1,372 @@
 <!DOCTYPE html>
-
 <!--
   Verbiq - AI Text Analysis Portal
   Copyright 2026 Linus Orock Eyong
   Licensed under the Apache License, Version 2.0
   https://github.com/orock-eyong/verbiq
 -->
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Verbiq - AI Text Analysis</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Verbiq - AI Text Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<style>
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 40px 20px;
-    }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-    .container {
-      background: white;
-      border-radius: 12px;
-      padding: 40px;
-      width: 100%;
-      max-width: 720px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
+:root {
+  --orange:      #e67e22;
+  --orange-dark: #d35400;
+  --orange-light:#f39c12;
+  --navy:        #1a1a2e;
+  --navy-light:  #2c2c54;
+  --bg:          #eef2ff;
+  --card:        rgba(255,255,255,0.92);
+  --surface:     #f8f9fa;
+  --border:      #e5e7eb;
+  --text:        #111827;
+  --muted:       #6b7280;
+  --green:       #27ae60;
+  --red:         #e74c3c;
+  --blue:        #3498db;
+  --shadow:      0 10px 40px rgba(0,0,0,0.08);
+  --radius:      14px;
+  --transition:  0.25s ease;
+}
 
-    .header { text-align: center; margin-bottom: 30px; }
+[data-theme="dark"] {
+  --bg:      #0f0f1a;
+  --card:    rgba(26,26,46,0.97);
+  --surface: #16213e;
+  --border:  #2c2c54;
+  --text:    #f1f5f9;
+  --muted:   #94a3b8;
+  --shadow:  0 10px 40px rgba(0,0,0,0.45);
+}
 
-    .logo {
-      font-size: 52px;
-      font-weight: 900;
-      color: #1a1a2e;
-      letter-spacing: -2px;
-      margin-bottom: 6px;
-    }
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, var(--bg), #f8fafc);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px 60px;
+  transition: background var(--transition);
+}
 
-    .logo span { color: #e67e22; }
-    .tagline { font-size: 13px; color: #888; margin-bottom: 16px; }
+[data-theme="dark"] body {
+  background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+}
 
-    .badges {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+.container {
+  width: 100%;
+  max-width: 740px;
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: background var(--transition), border-color var(--transition);
+}
 
-    .badge {
-      background: #f0f2f5;
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 11px;
-      color: #555;
-    }
+/* Header */
+.header { text-align: center; margin-bottom: 28px; position: relative; }
 
-    .upload-area {
-      border: 2px dashed #ccc;
-      border-radius: 10px;
-      padding: 40px 20px;
-      text-align: center;
-      transition: all 0.3s ease;
-      margin: 24px 0 20px;
-      background: #fafafa;
-      position: relative;
-    }
+.theme-toggle {
+  position: absolute; right: 0; top: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px;
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: all var(--transition); color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+.theme-toggle:hover { background: var(--orange); color: white; border-color: var(--orange); }
 
-    .upload-area.dragover { border-color: #e67e22; background: #fff8f0; }
-    .upload-icon { font-size: 48px; margin-bottom: 12px; pointer-events: none; }
-    .upload-area h3 { color: #333; margin-bottom: 8px; font-size: 16px; pointer-events: none; }
-    .upload-area p { color: #999; font-size: 13px; pointer-events: none; }
-    .upload-area .allowed { margin-top: 10px; font-size: 12px; color: #e67e22; font-weight: bold; pointer-events: none; }
+.logo {
+  font-size: 54px; font-weight: 900;
+  color: var(--navy); letter-spacing: -2px; margin-bottom: 6px;
+  transition: color var(--transition);
+}
+[data-theme="dark"] .logo { color: #f1f5f9; }
 
-    #fileInput {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      opacity: 0; cursor: pointer;
-    }
+.logo span {
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-    .btn {
-      width: 100%; padding: 14px; border: none;
-      border-radius: 8px; font-size: 16px;
-      font-weight: bold; cursor: pointer;
-      transition: all 0.3s ease; margin-top: 10px;
-    }
+.tagline { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
 
-    .btn-primary { background: #e67e22; color: white; }
-    .btn-primary:hover:not(:disabled) { background: #d35400; }
-    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-secondary { background: #1a1a2e; color: white; }
-    .btn-secondary:hover { background: #2c2c54; }
+.badges { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; }
+.badge {
+  background: var(--surface); border-radius: 20px;
+  padding: 4px 12px; font-size: 11px;
+  color: var(--muted); border: 1px solid var(--border);
+}
 
-    .file-info {
-      background: #f8f9fa; border-radius: 8px;
-      padding: 12px 16px; margin-bottom: 10px;
-      display: none; align-items: center; gap: 10px;
-    }
-    .file-info.visible { display: flex; }
-    .file-info .name { font-size: 13px; color: #333; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .file-info .remove { cursor: pointer; color: #e74c3c; font-size: 18px; font-weight: bold; background: none; border: none; padding: 0 4px; }
+/* Upload */
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: 12px; padding: 40px 24px;
+  text-align: center; margin: 20px 0 16px;
+  background: var(--surface); position: relative;
+  cursor: pointer;
+  animation: pulse-border 3s ease-in-out infinite;
+  transition: all var(--transition);
+}
 
-    .progress-container { display: none; margin: 15px 0; }
-    .progress-container.visible { display: block; }
-    .progress-label { font-size: 13px; color: #555; margin-bottom: 6px; }
-    .progress-bar-bg { background: #eee; border-radius: 10px; height: 10px; overflow: hidden; }
-    .progress-bar { height: 100%; background: #e67e22; border-radius: 10px; width: 0%; transition: width 0.4s ease; }
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--border); }
+  50%       { border-color: var(--orange); }
+}
 
-    .status { margin-top: 20px; padding: 14px; border-radius: 8px; font-size: 14px; text-align: center; display: none; line-height: 1.6; }
-    .status.visible { display: block; }
-    .status.success { background: #eafaf1; color: #27ae60; border: 1px solid #27ae60; }
-    .status.error   { background: #fdf2f2; color: #e74c3c; border: 1px solid #e74c3c; }
-    .status.loading { background: #fdf3e8; color: #e67e22; border: 1px solid #e67e22; }
+.upload-area:hover, .upload-area.dragover {
+  border-color: var(--orange);
+  background: #fff8f0;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(230,126,34,0.12);
+  animation: none;
+}
 
-    .results-panel { display: none; margin-top: 30px; border-top: 2px solid #f0f0f0; padding-top: 24px; }
-    .results-panel.visible { display: block; }
-    .results-title { font-size: 18px; color: #1a1a2e; margin-bottom: 20px; text-align: center; font-weight: bold; }
+[data-theme="dark"] .upload-area:hover,
+[data-theme="dark"] .upload-area.dragover { background: #1e1b16; }
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
+.upload-icon { font-size: 44px; margin-bottom: 10px; pointer-events: none; }
+.upload-area h3 { color: var(--text); font-size: 16px; font-weight: 600; margin-bottom: 6px; pointer-events: none; }
+.upload-area p  { color: var(--muted); font-size: 13px; pointer-events: none; }
+.allowed { margin-top: 10px; font-size: 11px; color: var(--orange); font-weight: 600; pointer-events: none; }
 
-    .stat-card {
-      background: #f8f9fa; border-radius: 10px;
-      padding: 16px 12px; text-align: center;
-      border-left: 4px solid #e67e22;
-    }
+.file-type-icons { display: flex; justify-content: center; gap: 16px; margin-top: 14px; pointer-events: none; }
+.file-type-icon  { font-size: 22px; opacity: 0.45; }
 
-    .stat-value { font-size: 26px; font-weight: bold; color: #1a1a2e; }
-    .stat-label { font-size: 11px; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+#fileInput {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; opacity: 0; cursor: pointer;
+}
 
-    .section { margin-bottom: 24px; }
-    .section h3 { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+/* File info */
+.file-info {
+  background: var(--surface); border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 10px;
+  display: none; align-items: center; gap: 10px;
+  border: 1px solid var(--border);
+}
+.file-info.visible { display: flex; }
+.file-info .name { font-size: 13px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-info .size { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.file-info .remove {
+  cursor: pointer; color: var(--red); font-size: 18px;
+  font-weight: bold; background: none; border: none; padding: 0 4px;
+  transition: transform var(--transition);
+}
+.file-info .remove:hover { transform: scale(1.2); }
 
-    .language-badge { display: inline-block; background: #1a1a2e; color: white; border-radius: 20px; padding: 6px 16px; font-size: 14px; font-weight: bold; }
+/* Progress */
+.progress-container { display: none; margin: 12px 0; }
+.progress-container.visible { display: block; }
+.progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.progress-bar-bg { background: var(--border); border-radius: 10px; height: 10px; overflow: hidden; }
+.progress-bar {
+  height: 100%; border-radius: 10px;
+  background: linear-gradient(90deg, var(--orange), var(--orange-light));
+  width: 0%; transition: width 0.5s ease;
+  position: relative; overflow: hidden;
+}
+.progress-bar::after {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { 0% { left:-100%; } 100% { left:200%; } }
 
-    .readability-bar-bg { background: #eee; border-radius: 10px; height: 12px; overflow: hidden; margin-top: 8px; }
-    .readability-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
-    .readability-info { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-top: 4px; }
+/* Buttons */
+.btn {
+  width: 100%; padding: 14px; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: all var(--transition);
+  margin-top: 10px; font-family: 'Inter', sans-serif;
+}
+.btn:active { transform: scale(0.97); }
 
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag { background: #fff3e0; color: #e67e22; border: 1px solid #e67e22; border-radius: 20px; padding: 4px 12px; font-size: 12px; }
-    .tag small { color: #aaa; font-size: 10px; margin-left: 4px; }
-    .tag.skill { background: #e8f4f8; color: #2980b9; border-color: #2980b9; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: white; box-shadow: 0 6px 18px rgba(230,126,34,0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+  box-shadow: 0 8px 24px rgba(230,126,34,0.4);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; box-shadow: none; }
 
-    .summary-box { background: #f8f9fa; border-radius: 8px; padding: 16px; font-size: 14px; color: #444; line-height: 1.8; border-left: 4px solid #3498db; }
+.btn-secondary { background: var(--navy); color: white; }
+.btn-secondary:hover { background: var(--navy-light); transform: translateY(-1px); }
+[data-theme="dark"] .btn-secondary { background: var(--navy-light); }
 
-    .cv-panel {
-      background: #f8f9fa; border-radius: 10px;
-      padding: 20px; border-left: 4px solid #27ae60;
-    }
+.download-bar { display: flex; gap: 10px; margin-top: 20px; }
+@media (max-width: 480px) { .download-bar { flex-direction: column; } }
 
-    .cv-row { display: flex; gap: 12px; margin-bottom: 8px; font-size: 13px; }
-    .cv-label { font-weight: bold; color: #888; text-transform: uppercase; font-size: 11px; min-width: 80px; padding-top: 1px; }
-    .cv-value { color: #333; flex: 1; }
+/* Status */
+.status {
+  margin-top: 14px; padding: 13px 16px; border-radius: 10px;
+  font-size: 13px; text-align: center; display: none; line-height: 1.6;
+  border: 1px solid transparent;
+}
+.status.visible { display: block; }
+.status.success { background: #eafaf1; color: var(--green);  border-color: #a8e6c3; }
+.status.error   { background: #fdf2f2; color: var(--red);    border-color: #f5c6cb; }
+.status.loading { background: #fff4e5; color: var(--orange); border-color: #fcd9a8; }
 
-    .download-bar {
-      display: flex; gap: 10px; margin-top: 24px;
-      padding-top: 20px; border-top: 1px solid #f0f0f0;
-    }
+[data-theme="dark"] .status.success { background: #0d2318; border-color: #27ae60; }
+[data-theme="dark"] .status.error   { background: #2d0d0d; border-color: #e74c3c; }
+[data-theme="dark"] .status.loading { background: #2d1b08; border-color: #e67e22; }
 
-    .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #aaa; }
-  </style>
+/* Results */
+.results-panel { display: none; margin-top: 28px; border-top: 2px solid var(--border); padding-top: 24px; }
+.results-panel.visible { display: block; }
+.results-title { font-size: 18px; color: var(--text); margin-bottom: 20px; text-align: center; font-weight: 700; }
+
+/* Stat cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--surface); border-radius: 12px;
+  padding: 18px 14px; text-align: center;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--orange);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.stat-value { font-size: 26px; font-weight: 800; color: var(--text); }
+.stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+
+/* Sections */
+.section {
+  background: var(--surface); border-radius: 12px;
+  padding: 18px; margin-bottom: 14px;
+  border: 1px solid var(--border);
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.section.visible { opacity: 1; transform: translateY(0); }
+.section h3 {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+/* Language */
+.language-badge {
+  display: inline-block; background: var(--navy);
+  color: white; border-radius: 20px;
+  padding: 6px 18px; font-size: 14px; font-weight: 700;
+}
+[data-theme="dark"] .language-badge { background: var(--navy-light); }
+
+/* Gauge */
+.gauge-container { display: flex; align-items: center; gap: 20px; }
+.gauge-wrap { position: relative; width: 110px; height: 64px; flex-shrink: 0; }
+.gauge-svg  { width: 110px; height: 64px; }
+.gauge-text { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
+.gauge-score { font-size: 18px; font-weight: 800; color: var(--text); }
+.gauge-max   { font-size: 10px; color: var(--muted); }
+.gauge-info  { flex: 1; }
+.gauge-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.gauge-desc  { font-size: 12px; color: var(--muted); }
+
+/* Summary */
+.summary-box {
+  background: var(--card); border-radius: 10px;
+  padding: 16px 16px 16px 16px; font-size: 14px;
+  color: var(--text); line-height: 1.8;
+  border-left: 4px solid var(--blue); position: relative;
+}
+.copy-btn {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 4px 10px; font-size: 11px;
+  cursor: pointer; color: var(--muted);
+  transition: all var(--transition); font-family: 'Inter', sans-serif;
+}
+.copy-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* Tags */
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag {
+  background: #fff3e0; color: var(--orange);
+  border: 1px solid var(--orange); border-radius: 20px;
+  padding: 5px 13px; font-size: 12px; font-weight: 500;
+  transition: transform var(--transition);
+}
+.tag:hover { transform: scale(1.06); }
+.tag small  { color: var(--muted); font-size: 10px; margin-left: 4px; }
+.tag.skill  { background: #e8f4f8; color: var(--blue); border-color: var(--blue); }
+
+[data-theme="dark"] .tag       { background: #2d1b08; }
+[data-theme="dark"] .tag.skill { background: #0d1f2d; }
+
+/* CV Panel */
+.cv-panel {
+  background: linear-gradient(135deg, #eafaf1, #d5f5e3);
+  border-radius: 12px; padding: 20px; border-left: 4px solid var(--green);
+}
+[data-theme="dark"] .cv-panel { background: linear-gradient(135deg, #0d2318, #0a1f14); }
+
+.cv-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), #2ecc71);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: white; margin-bottom: 14px;
+}
+.cv-row { display: flex; gap: 12px; margin-bottom: 8px; }
+.cv-label { font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 10px; min-width: 74px; padding-top: 1px; letter-spacing: 0.5px; }
+.cv-value { color: var(--text); flex: 1; font-size: 13px; }
+
+/* Footer */
+.footer { text-align: center; margin-top: 28px; font-size: 12px; color: var(--muted); line-height: 1.8; }
+.footer strong { color: var(--orange); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy); color: white;
+  padding: 12px 24px; border-radius: 30px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0; z-index: 9999;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* Retry */
+.retry-btn {
+  display: inline-block; margin-top: 8px;
+  background: var(--red); color: white; border: none;
+  border-radius: 8px; padding: 6px 16px; font-size: 12px;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: background var(--transition);
+}
+.retry-btn:hover { background: #c0392b; }
+
+</style>
 </head>
 <body>
+
+<div class="toast" id="toast"></div>
+
 <div class="container">
 
   <div class="header">
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
     <div class="logo">Ver<span>biq</span></div>
     <div class="tagline">Instant AI-powered document analysis</div>
     <div class="badges">
@@ -190,20 +381,26 @@
 
   <div class="upload-area" id="dropZone">
     <div class="upload-icon">📂</div>
-    <h3>Drag & Drop your document here</h3>
+    <h3>Drag &amp; Drop your document here</h3>
     <p>or click to browse your computer</p>
-    <div class="allowed">Allowed: .txt .pdf .docx</div>
+    <div class="allowed">Allowed: .txt &nbsp;·&nbsp; .pdf &nbsp;·&nbsp; .docx</div>
+    <div class="file-type-icons">
+      <span class="file-type-icon">📄</span>
+      <span class="file-type-icon">📑</span>
+      <span class="file-type-icon">📝</span>
+    </div>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx"/>
   </div>
 
   <div class="file-info" id="fileInfo">
     <span>📄</span>
     <span class="name" id="fileName">No file selected</span>
+    <span class="size" id="fileSize"></span>
     <button class="remove" onclick="removeFile()">✕</button>
   </div>
 
   <div class="progress-container" id="progressContainer">
-    <div class="progress-label" id="progressLabel">Uploading...</div>
+    <div class="progress-label" id="progressLabel">Processing...</div>
     <div class="progress-bar-bg">
       <div class="progress-bar" id="progressBar"></div>
     </div>
@@ -217,32 +414,44 @@
 
   <div class="results-panel" id="resultsPanel">
     <div class="results-title">📊 Analysis Results</div>
-
     <div class="stats-grid" id="statsGrid"></div>
 
-    <div class="section">
+    <div class="section" id="secLanguage">
       <h3>🌍 Detected Language</h3>
       <span class="language-badge" id="languageBadge"></span>
     </div>
 
-    <div class="section">
+    <div class="section" id="secReadability">
       <h3>📖 Readability</h3>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="readabilityLabel" style="font-size:14px; font-weight:bold;"></span>
-        <span id="readabilityScore" style="font-size:13px; color:#888;"></span>
+      <div class="gauge-container">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 110 64">
+            <path d="M10,58 A45,45 0 0,1 100,58" fill="none" stroke="#e5e7eb" stroke-width="10" stroke-linecap="round"/>
+            <path id="gaugePath" d="M10,58 A45,45 0 0,1 100,58" fill="none" stroke="#e67e22" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="141.4" stroke-dashoffset="141.4"
+              style="transition: stroke-dashoffset 1.2s ease, stroke 0.5s ease;"/>
+          </svg>
+          <div class="gauge-text">
+            <div class="gauge-score" id="gaugeScore">0</div>
+            <div class="gauge-max">/100</div>
+          </div>
+        </div>
+        <div class="gauge-info">
+          <div class="gauge-label" id="readabilityLabel"></div>
+          <div class="gauge-desc"  id="readabilityDesc"></div>
+        </div>
       </div>
-      <div class="readability-bar-bg">
-        <div class="readability-bar" id="readabilityBar"></div>
-      </div>
-      <div class="readability-info"><span>Very Difficult</span><span>Very Easy</span></div>
     </div>
 
-    <div class="section">
+    <div class="section" id="secSummary">
       <h3>📝 AI Summary</h3>
-      <div class="summary-box" id="summaryBox"></div>
+      <div class="summary-box">
+        <button class="copy-btn" onclick="copySummary()">📋 Copy</button>
+        <span id="summaryText"></span>
+      </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="secKeywords">
       <h3>🔑 Top Keywords</h3>
       <div class="tags" id="keywordsContainer"></div>
     </div>
@@ -253,291 +462,353 @@
     </div>
 
     <div class="download-bar">
-      <button class="btn btn-secondary" onclick="downloadReport()" style="flex:1;">
-        ⬇️ Download Full Report
-      </button>
-      <button class="btn btn-primary" onclick="analyseAnother()" style="flex:1;">
-        🔍 Analyse Another
-      </button>
+      <button class="btn btn-secondary" onclick="downloadReport()" style="flex:1;">⬇️ Download Report</button>
+      <button class="btn btn-primary"   onclick="analyseAnother()" style="flex:1;">🔍 Analyse Another</button>
     </div>
   </div>
 
   <div class="footer">
-    🔒 Files are securely processed and never stored permanently<br>
-    <strong style="color:#e67e22;">Verbiq</strong> - Powered by AWS
+    🔒 Files are securely processed and never stored permanently<br/>
+    <strong>Verbiq</strong> — Powered by AWS
   </div>
 
 </div>
-
 <script>
-  const UPLOAD_URL   = "https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/upload";
-  const ANALYSE_URL  = "https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/analyse";
-  const DOWNLOAD_URL = "https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/download";
 
-  let selectedFile  = null;
-  let reportKey     = null;
+const CONFIG = {
+  UPLOAD_URL:      'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/upload',
+  ANALYSE_URL:     'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/analyse',
+  DOWNLOAD_URL:    'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/download',
+  MAX_FILE_MB:     10,
+  ALLOWED_EXTS:    ['.txt', '.pdf', '.docx'],
+  FETCH_TIMEOUT:   30000,
+  CONTENT_TYPES: {
+    txt:  'text/plain',
+    pdf:  'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  }
+};
 
-  // ─── File Input ───
-  document.getElementById('fileInput').addEventListener('change', function(e) {
-    if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-  });
+let selectedFile = null;
+let reportKey    = null;
 
-  // ─── Drag and Drop ───
-  const dropZone = document.getElementById('dropZone');
+// Theme
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙 Dark' : '☀️ Light';
+  localStorage.setItem('verbiq-theme', isDark ? 'light' : 'dark');
+}
 
-  ['dragenter','dragover','dragleave','drop'].forEach(evt => {
-    document.body.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
-  });
+(function applyStoredTheme() {
+  const saved = localStorage.getItem('verbiq-theme');
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeBtn').textContent = '☀️ Light';
+  }
+})();
 
-  dropZone.addEventListener('dragenter', () => dropZone.classList.add('dragover'));
-  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
-  });
+// Fetch with timeout
+function fetchWithTimeout(url, options) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(id));
+}
 
-  // ─── Handle File Selection ───
-  function handleFileSelect(file) {
-    if (!file) return;
-    const allowed = ['.txt', '.pdf', '.docx'];
-    const ext = '.' + file.name.split('.').pop().toLowerCase();
-    if (!allowed.includes(ext)) {
-      showStatus(`❌ Invalid file type "${ext}". Allowed: ${allowed.join(', ')}`, 'error');
-      return;
-    }
-    selectedFile = file;
-    document.getElementById('fileName').textContent = `${file.name} (${formatSize(file.size)})`;
-    document.getElementById('fileInfo').classList.add('visible');
-    document.getElementById('uploadBtn').disabled = false;
-    document.getElementById('resultsPanel').classList.remove('visible');
-    reportKey = null;
-    hideStatus();
+// File input
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+});
+
+// Drag and drop
+const dropZone = document.getElementById('dropZone');
+['dragenter','dragover','dragleave','drop'].forEach(evt => {
+  document.body.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
+});
+dropZone.addEventListener('dragenter', () => dropZone.classList.add('dragover'));
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
+});
+
+// Handle file selection
+function handleFileSelect(file) {
+  if (!file) return;
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+  if (!CONFIG.ALLOWED_EXTS.includes(ext)) {
+    showStatus(`❌ Invalid file type "${ext}". Allowed: ${CONFIG.ALLOWED_EXTS.join(', ')}`, 'error');
+    return;
   }
 
-  // ─── Remove File ───
-  function removeFile() {
-    selectedFile = null;
-    reportKey    = null;
-    document.getElementById('fileInput').value = '';
-    document.getElementById('fileInfo').classList.remove('visible');
-    document.getElementById('uploadBtn').disabled = true;
-    document.getElementById('progressContainer').classList.remove('visible');
-    document.getElementById('resultsPanel').classList.remove('visible');
-    hideStatus();
+  const maxBytes = CONFIG.MAX_FILE_MB * 1024 * 1024;
+  if (file.size > maxBytes) {
+    showStatus(`❌ File too large (${formatSize(file.size)}). Maximum: ${CONFIG.MAX_FILE_MB}MB.`, 'error');
+    return;
   }
 
-  // ─── Analyse Another ───
-  function analyseAnother() {
-    removeFile();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // ─── Main Upload and Analyse ───
-  async function uploadAndAnalyse() {
-    if (!selectedFile) { showStatus('❌ Please select a file first', 'error'); return; }
-
-    const btn = document.getElementById('uploadBtn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Analysing...';
-
-    const contentType = getContentType(selectedFile.name);
-
-    try {
-
-      // Step 1 - Get pre-signed upload URL
-      showStatus('⏳ Step 1/3 — Requesting secure upload URL...', 'loading');
-      showProgress('Requesting upload URL...', 15);
-
-      const uploadUrlResponse = await fetch(UPLOAD_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: selectedFile.name, contentType })
-      });
-
-      const uploadData = await uploadUrlResponse.json();
-      if (!uploadUrlResponse.ok || !uploadData.upload_url) {
-        throw new Error(uploadData.error || `Upload URL error: ${uploadUrlResponse.status}`);
+  if (ext === '.pdf') {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const header = String.fromCharCode(...new Uint8Array(e.target.result).slice(0, 4));
+      if (header !== '%PDF') {
+        showStatus('❌ This file does not appear to be a valid PDF.', 'error');
+        return;
       }
-
-      // Step 2 - Upload file directly to S3
-      showStatus('⏳ Step 2/3 — Uploading your document...', 'loading');
-      showProgress('Uploading...', 40);
-
-      const s3Response = await fetch(uploadData.upload_url, {
-        method: 'PUT',
-        headers: { 'Content-Type': contentType },
-        body: selectedFile
-      });
-
-      if (!s3Response.ok) throw new Error(`S3 upload failed: ${s3Response.status}`);
-
-      // Step 3 - Trigger analysis
-      showStatus('⏳ Step 3/3 — Analysing your document...', 'loading');
-      showProgress('Analysing...', 70);
-
-      const analyseResponse = await fetch(ANALYSE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: selectedFile.name, contentType })
-      });
-
-      const analysis = await analyseResponse.json();
-      if (!analyseResponse.ok) throw new Error(analysis.error || `Analysis error: ${analyseResponse.status}`);
-
-      // Store report key for download
-      reportKey = analysis.report_key;
-
-      showProgress('Complete! ✅', 100);
-      showStatus(`✅ <strong>${selectedFile.name}</strong> analysed successfully!`, 'success');
-      renderResults(analysis);
-
-      btn.textContent = '🔍 Analyse Document';
-      btn.disabled = false;
-
-    } catch (error) {
-      console.error('Error:', error);
-      showStatus(`❌ Failed: ${error.message}<br><br>💡 Please try again.`, 'error');
-      btn.disabled = false;
-      btn.textContent = '🔍 Analyse Document';
-    }
-  }
-
-  // ─── Download Report ───
-  async function downloadReport() {
-    if (!reportKey) { alert('No report available yet.'); return; }
-
-    try {
-      const response = await fetch(DOWNLOAD_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: reportKey })
-      });
-
-      const data = await response.json();
-      if (!data.download_url) throw new Error('Could not get report URL');
-
-      const htmlResponse = await fetch(data.download_url);
-      const htmlContent  = await htmlResponse.text();
-      const blob         = new Blob([htmlContent], { type: 'text/html' });
-      const url          = URL.createObjectURL(blob);
-      const a            = document.createElement('a');
-      a.href             = url;
-      a.download         = `verbiq-report-${selectedFile ? selectedFile.name : 'document'}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-    } catch (error) {
-      alert(`Download failed: ${error.message}`);
-    }
-  }
-
-  // ─── Render Results ───
-  function renderResults(analysis) {
-    const panel = document.getElementById('resultsPanel');
-
-    // Stats
-    document.getElementById('statsGrid').innerHTML = [
-      { value: analysis.word_count.toLocaleString(),      label: 'Words' },
-      { value: analysis.character_count.toLocaleString(), label: 'Characters' },
-      { value: analysis.unique_words.toLocaleString(),    label: 'Unique Words' },
-      { value: analysis.reading_time,                     label: 'Reading Time' },
-    ].map(s => `
-      <div class="stat-card">
-        <div class="stat-value">${s.value}</div>
-        <div class="stat-label">${s.label}</div>
-      </div>
-    `).join('');
-
-    // Language
-    document.getElementById('languageBadge').textContent = analysis.language;
-
-    // Readability
-    const score = analysis.readability_score;
-    const color = score >= 70 ? '#27ae60' : score >= 50 ? '#e67e22' : '#e74c3c';
-    document.getElementById('readabilityLabel').textContent = analysis.readability_label;
-    document.getElementById('readabilityLabel').style.color = color;
-    document.getElementById('readabilityScore').textContent = `Score: ${score}/100`;
-    document.getElementById('readabilityBar').style.width      = `${score}%`;
-    document.getElementById('readabilityBar').style.background = color;
-
-    // Summary
-    document.getElementById('summaryBox').textContent = analysis.summary;
-
-    // Keywords
-    document.getElementById('keywordsContainer').innerHTML = analysis.keywords
-      .map(k => `<span class="tag">${k.word}<small>${k.count}x</small></span>`)
-      .join('');
-
-    // CV Section
-    const cvData    = analysis.cv_data;
-    const cvSection = document.getElementById('cvSection');
-    const cvPanel   = document.getElementById('cvPanel');
-
-    if (cvData && cvData.is_cv) {
-      const skillsHtml = (cvData.skills || [])
-        .map(s => `<span class="tag skill">${s}</span>`).join('');
-      const expHtml = (cvData.experience || [])
-        .map(e => `<li style="font-size:13px;color:#555;margin-bottom:4px;">${e}</li>`).join('');
-      const eduHtml = (cvData.education || [])
-        .map(e => `<li style="font-size:13px;color:#555;margin-bottom:4px;">${e}</li>`).join('');
-
-      cvPanel.innerHTML = `
-        <div style="font-size:13px;font-weight:bold;color:#27ae60;margin-bottom:12px;">✅ CV / Resume Detected</div>
-        ${cvData.name     ? `<div class="cv-row"><span class="cv-label">Name</span><span class="cv-value">${cvData.name}</span></div>` : ''}
-        ${cvData.email    ? `<div class="cv-row"><span class="cv-label">Email</span><span class="cv-value">${cvData.email}</span></div>` : ''}
-        ${cvData.phone    ? `<div class="cv-row"><span class="cv-label">Phone</span><span class="cv-value">${cvData.phone}</span></div>` : ''}
-        ${cvData.linkedin ? `<div class="cv-row"><span class="cv-label">LinkedIn</span><span class="cv-value">${cvData.linkedin}</span></div>` : ''}
-        ${cvData.github   ? `<div class="cv-row"><span class="cv-label">GitHub</span><span class="cv-value">${cvData.github}</span></div>` : ''}
-        ${skillsHtml      ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Skills</div><div class="tags">${skillsHtml}</div></div>` : ''}
-        ${expHtml         ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Experience</div><ul style="padding-left:16px;">${expHtml}</ul></div>` : ''}
-        ${eduHtml         ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Education</div><ul style="padding-left:16px;">${eduHtml}</ul></div>` : ''}
-      `;
-      cvSection.style.display = 'block';
-    } else {
-      cvSection.style.display = 'none';
-    }
-
-    panel.classList.add('visible');
-    panel.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  // ─── Helpers ───
-  function getContentType(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const map = {
-      'txt':  'text/plain',
-      'pdf':  'application/pdf',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      confirmFileSelect(file);
     };
-    return map[ext] || 'application/octet-stream';
+    reader.readAsArrayBuffer(file.slice(0, 4));
+  } else {
+    confirmFileSelect(file);
+  }
+}
+
+function confirmFileSelect(file) {
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent  = formatSize(file.size);
+  document.getElementById('fileInfo').classList.add('visible');
+  document.getElementById('uploadBtn').disabled = false;
+  document.getElementById('resultsPanel').classList.remove('visible');
+  reportKey = null;
+  hideStatus();
+}
+
+function removeFile() {
+  selectedFile = null;
+  reportKey    = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').classList.remove('visible');
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('progressContainer').classList.remove('visible');
+  document.getElementById('resultsPanel').classList.remove('visible');
+  hideStatus();
+}
+
+function analyseAnother() {
+  removeFile();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Main flow
+async function uploadAndAnalyse() {
+  if (!selectedFile) { showStatus('❌ Please select a file first.', 'error'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Analysing...';
+
+  const ext         = selectedFile.name.split('.').pop().toLowerCase();
+  const contentType = CONFIG.CONTENT_TYPES[ext] || 'application/octet-stream';
+
+  try {
+    showStatus('⏳ Step 1/3 — Requesting secure upload URL...', 'loading');
+    showProgress('Requesting upload URL...', 15);
+
+    const uploadUrlRes = await fetchWithTimeout(CONFIG.UPLOAD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: selectedFile.name, contentType })
+    });
+    const uploadData = await uploadUrlRes.json();
+    if (!uploadUrlRes.ok || !uploadData.upload_url)
+      throw new Error(uploadData.error || `Upload URL error: ${uploadUrlRes.status}`);
+
+    showStatus('⏳ Step 2/3 — Uploading your document...', 'loading');
+    showProgress('Uploading...', 45);
+
+    const s3Res = await fetchWithTimeout(uploadData.upload_url, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body: selectedFile
+    });
+    if (!s3Res.ok) throw new Error(`S3 upload failed: ${s3Res.status}`);
+
+    showStatus('⏳ Step 3/3 — Analysing your document...', 'loading');
+    showProgress('Analysing...', 72);
+
+    const analyseRes = await fetchWithTimeout(CONFIG.ANALYSE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: selectedFile.name, contentType })
+    });
+    const analysis = await analyseRes.json();
+    if (!analyseRes.ok) throw new Error(analysis.error || `Analysis error: ${analyseRes.status}`);
+
+    reportKey = analysis.report_key;
+    showProgress('Complete! ✅', 100);
+    showStatus(`✅ <strong>${escapeHtml(selectedFile.name)}</strong> analysed successfully!`, 'success');
+    renderResults(analysis);
+    btn.textContent = '🔍 Analyse Document';
+    btn.disabled    = false;
+
+  } catch (err) {
+    const isTimeout = err.name === 'AbortError';
+    const msg = isTimeout
+      ? '⏱️ Request timed out. The server took too long to respond.'
+      : `❌ Failed: ${escapeHtml(err.message)}`;
+    document.getElementById('status').innerHTML =
+      `${msg}<br/><button class="retry-btn" onclick="uploadAndAnalyse()">🔄 Try Again</button>`;
+    document.getElementById('status').className = 'status visible error';
+    btn.disabled    = false;
+    btn.textContent = '🔍 Analyse Document';
+  }
+}
+
+// Download
+async function downloadReport() {
+  if (!reportKey) { showToast('No report available yet.'); return; }
+  try {
+    const res  = await fetchWithTimeout(CONFIG.DOWNLOAD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: reportKey })
+    });
+    const data = await res.json();
+    if (!data.download_url) throw new Error('Could not get report URL.');
+    const html = await (await fetch(data.download_url)).text();
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    a.download = `verbiq-report-${selectedFile ? selectedFile.name : 'document'}.html`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  } catch (err) { showToast(`Download failed: ${err.message}`); }
+}
+
+// Render results
+function renderResults(a) {
+  const panel = document.getElementById('resultsPanel');
+
+  // Stat cards
+  const stats = [
+    { value: a.word_count,      label: 'Words'       },
+    { value: a.character_count, label: 'Characters'  },
+    { value: a.unique_words,    label: 'Unique Words' },
+    { value: a.reading_time,    label: 'Reading Time', noAnim: true }
+  ];
+  document.getElementById('statsGrid').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-value" data-target="${s.noAnim ? '' : s.value}">${s.noAnim ? s.value : '0'}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>`).join('');
+
+  // Language
+  document.getElementById('languageBadge').textContent = escapeHtml(a.language);
+
+  // Readability gauge
+  const score = a.readability_score;
+  const color = score >= 70 ? '#27ae60' : score >= 50 ? '#e67e22' : '#e74c3c';
+  const desc  = score >= 70 ? 'Easy to read for most audiences.'
+              : score >= 50 ? 'Moderate — some complexity present.'
+              : 'Difficult — consider simplifying.';
+  document.getElementById('readabilityLabel').textContent = escapeHtml(a.readability_label);
+  document.getElementById('readabilityLabel').style.color = color;
+  document.getElementById('readabilityDesc').textContent  = desc;
+  document.getElementById('gaugeScore').textContent       = score;
+  document.getElementById('gaugeScore').style.color       = color;
+  setTimeout(() => {
+    const path = document.getElementById('gaugePath');
+    path.style.strokeDashoffset = 141.4 - (141.4 * score / 100);
+    path.style.stroke           = color;
+  }, 100);
+
+  // Summary
+  document.getElementById('summaryText').textContent = a.summary;
+
+  // Keywords
+  document.getElementById('keywordsContainer').innerHTML = a.keywords
+    .map(k => `<span class="tag">${escapeHtml(k.word)}<small>${k.count}x</small></span>`).join('');
+
+  // CV section
+  const cvData    = a.cv_data;
+  const cvSection = document.getElementById('cvSection');
+  if (cvData && cvData.is_cv) {
+    const initials   = (cvData.name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const skillsHtml = (cvData.skills    || []).map(s => `<span class="tag skill">${escapeHtml(s)}</span>`).join('');
+    const expHtml    = (cvData.experience|| []).map(e => `<li style="font-size:13px;color:var(--text);margin-bottom:4px;">${escapeHtml(e)}</li>`).join('');
+    const eduHtml    = (cvData.education || []).map(e => `<li style="font-size:13px;color:var(--text);margin-bottom:4px;">${escapeHtml(e)}</li>`).join('');
+    document.getElementById('cvPanel').innerHTML = `
+      <div class="cv-avatar">${initials}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:12px;">✅ CV / Resume Detected</div>
+      ${cvData.name     ? `<div class="cv-row"><span class="cv-label">Name</span><span class="cv-value">${escapeHtml(cvData.name)}</span></div>` : ''}
+      ${cvData.email    ? `<div class="cv-row"><span class="cv-label">Email</span><span class="cv-value">${escapeHtml(cvData.email)}</span></div>` : ''}
+      ${cvData.phone    ? `<div class="cv-row"><span class="cv-label">Phone</span><span class="cv-value">${escapeHtml(cvData.phone)}</span></div>` : ''}
+      ${cvData.linkedin ? `<div class="cv-row"><span class="cv-label">LinkedIn</span><span class="cv-value">${escapeHtml(cvData.linkedin)}</span></div>` : ''}
+      ${cvData.github   ? `<div class="cv-row"><span class="cv-label">GitHub</span><span class="cv-value">${escapeHtml(cvData.github)}</span></div>` : ''}
+      ${skillsHtml ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Skills</div><div class="tags">${skillsHtml}</div></div>` : ''}
+      ${expHtml    ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Experience</div><ul style="padding-left:16px;">${expHtml}</ul></div>` : ''}
+      ${eduHtml    ? `<div style="margin-top:12px;"><div class="cv-label" style="margin-bottom:6px;">Education</div><ul style="padding-left:16px;">${eduHtml}</ul></div>` : ''}`;
+    cvSection.style.display = 'block';
+  } else {
+    cvSection.style.display = 'none';
   }
 
-  function showStatus(message, type) {
-    const el = document.getElementById('status');
-    el.innerHTML = message;
-    el.className = `status visible ${type}`;
-  }
+  // Show panel + sequential fade-in
+  panel.classList.add('visible');
+  ['secLanguage','secReadability','secSummary','secKeywords','cvSection'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el || el.style.display === 'none') return;
+    setTimeout(() => el.classList.add('visible'), 150 * (i + 1));
+  });
 
-  function hideStatus() {
-    document.getElementById('status').className = 'status';
-    document.getElementById('progressContainer').classList.remove('visible');
-  }
+  // Count-up animation
+  document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    if (isNaN(target)) return;
+    let current = 0;
+    const step  = Math.ceil(target / 40);
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { el.textContent = target.toLocaleString(); clearInterval(timer); }
+      else                   { el.textContent = current.toLocaleString(); }
+    }, 30);
+  });
 
-  function showProgress(label, percent) {
-    document.getElementById('progressContainer').classList.add('visible');
-    document.getElementById('progressLabel').textContent = label;
-    document.getElementById('progressBar').style.width   = percent + '%';
-  }
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
 
-  function formatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
+// Copy summary
+function copySummary() {
+  navigator.clipboard.writeText(document.getElementById('summaryText').textContent)
+    .then(() => showToast('✅ Summary copied to clipboard!'));
+}
+
+// Helpers
+function showStatus(message, type) {
+  const el = document.getElementById('status');
+  el.innerHTML = message;
+  el.className = `status visible ${type}`;
+}
+function hideStatus() {
+  document.getElementById('status').className = 'status';
+  document.getElementById('progressContainer').classList.remove('visible');
+}
+function showProgress(label, percent) {
+  document.getElementById('progressContainer').classList.add('visible');
+  document.getElementById('progressLabel').textContent = label;
+  document.getElementById('progressBar').style.width   = percent + '%';
+}
+function formatSize(bytes) {
+  if (bytes < 1024)         return bytes + ' B';
+  if (bytes < 1024 * 1024)  return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+function escapeHtml(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function showToast(message) {
+  const t = document.getElementById('toast');
+  t.textContent = message;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
 </script>
 </body>
 </html>
