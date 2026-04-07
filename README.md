@@ -5,9 +5,7 @@
 <b>Turn raw documents into actionable insights — instantly.</b>
 <br/>
 <a href="https://verbiq.pages.dev"><strong>🚀 Try Live Demo</strong></a>
-
 </div>
-
 ![AWS](https://img.shields.io/badge/AWS-Serverless-orange)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-yellow)
