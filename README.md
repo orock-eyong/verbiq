@@ -30,10 +30,11 @@ Fully serverless, cost-efficient, and scalable:
 - **Database**: DynamoDB (TTL enabled)
 - **Notifications**: SNS (email alerts)
 
-## Deployment
+## ⚙️ Deployment Guide
 
-### Step 1 - Build Lambda Layer
+1. ### Build Lambda Layer
 Open AWS CloudShell in eu-west-3 and run:
+
 ```bash
 bash scripts/build-layer.sh
 ```
