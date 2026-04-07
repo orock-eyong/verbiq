@@ -33,6 +33,8 @@ Open AWS CloudShell in eu-west-3 and run:
 ```bash
 bash scripts/build-layer.sh
 
+
+
 Copy the Layer ARN from the output.
 
 ### Step 2 - Deploy CloudFormation Stack
