@@ -57,14 +57,14 @@ const UPLOAD_URL   = "https://YOUR_API/upload";
 const ANALYSE_URL  = "https://YOUR_API/analyse";
 const DOWNLOAD_URL = "https://YOUR_API/download";
 ```
-Commit to GitHub and Cloudflare auto-deploys in 30 seconds.
+Push to GitHub → Cloudflare auto-deploys.
 
-### TTL Settings
-
-Data	Auto-deleted after
-Uploaded files (S3)	1 day
-Analysis reports (S3)	7 days
-Metadata (DynamoDB)	7 days
+### ⏳ Data Retention (TTL)
+| Resource              | Retention |
+| --------------------- | --------- |
+| Uploaded files (S3)   | 1 day     |
+| Analysis reports (S3) | 7 days    |
+| Metadata (DynamoDB)   | 7 days    |
 
 ### Roadmap
 - Phase 2: Amazon Comprehend for sentiment and entity extraction
