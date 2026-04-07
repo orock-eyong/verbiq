@@ -40,11 +40,12 @@ bash scripts/build-layer.sh
 ```
 Copy the Layer ARN from the output.
 
-### Step 2 - Deploy CloudFormation Stack
-1. Go to CloudFormation in eu-west-3
-2. Create stack using infrastructure/verbiq-template.yaml
-3. Fill in parameters including the Layer ARN from Step 1
-4. Wait for CREATE_COMPLETE
+### 2. Deploy Infrastructure (CloudFormation)
+**1**. Open AWS CloudFormation (region: eu-west-3)
+**2**. Create a new stack using:
+   infrastructure/verbiq-template.yaml
+**3**. Provide required parameters (including Layer ARN)
+**4**. Wait for CREATE_COMPLETE
 
 ### Step 3 - Update Frontend
 
