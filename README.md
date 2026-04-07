@@ -71,12 +71,12 @@ Push to GitHub → Cloudflare auto-deploys.
 - Phase 3 — User authentication (Cognito)
 - Phase 4 — Custom domain (verbiq.com)
 
-## Summary
+## 📁 Project Structure
 
-| File | Purpose |
-|---|---|
-| `index.html` | The entire frontend |
-| `infrastructure/verbiq-template.yaml` | Everything AWS |
-| `scripts/build-layer.sh` | Layer rebuild script |
-| `README.md` | Deployment instructions |
+| File                                  | Description               |
+| ------------------------------------- | ------------------------- |
+| `index.html`                          | Frontend application      |
+| `infrastructure/verbiq-template.yaml` | AWS infrastructure (IaC)  |
+| `scripts/build-layer.sh`              | Lambda layer build script |
+| `README.md`                           | Project documentation     |
 
