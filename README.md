@@ -1,7 +1,7 @@
 # 🧠 Verbiq — AI-Powered Document Intelligence
-<div align="center" style="margin-top:-10px; margin-bottom:-10px;">
+<div align="center" style="margin-top:-20px; margin-bottom:-20px;">
 
-<img src="./docs/banner.png" alt="Verbiq Banner" width="100%" style="margin:0; padding:0;"/>
+<img src="./docs/banner.png" alt="Verbiq Banner" width="100%" />
 
 <b>Turn raw documents into actionable insights — instantly.</b><br/>
 
