@@ -63,12 +63,22 @@ const DOWNLOAD_URL = "https://YOUR_API/download";
 ```
 Push to GitHub → Cloudflare auto-deploys.
 
-### ⏳ Data Retention (TTL)
+## ⏳Data Lifecycle (TTL)
 | Resource              | Retention |
 | --------------------- | --------- |
 | Uploaded files (S3)   | 1 day     |
 | Analysis reports (S3) | 7 days    |
 | Metadata (DynamoDB)   | 7 days    |
+
+## 📁 Project Structure
+
+verbiq/
+├── index.html
+├── infrastructure/
+│   └── verbiq-template.yaml
+├── scripts/
+│   └── build-layer.sh
+└── README.md
 
 🗺️ Roadmap
 - Phase 2 — Sentiment & entity analysis (Amazon Comprehend)
