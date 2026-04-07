@@ -54,6 +54,10 @@ Built for:
 - 📁 **Multi-format Support**  
   TXT · PDF · DOCX
 
+  ### 🖼️ Demo Preview
+
+  ![Demo](./docs/demo.gif)
+
 ## 🏗️ Architecture
 
 Fully serverless, cost-efficient, and scalable:
