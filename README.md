@@ -1,15 +1,15 @@
 # 🧠 Verbiq — AI-Powered Document Intelligence
-<p align="center">
-  <img src="./docs/banner.png" alt="Verbiq Banner"/>
-</p>
+<div align="center">
 
-<p align="center">
-  Turn raw documents into actionable insights — instantly.
-</p>
+<img src="./docs/banner.png" alt="Verbiq Banner" width="100%"/>
 
-<p align="center">
-  <a href="https://verbiq.pages.dev"><strong>🚀 Try Live Demo</strong></a>
-</p>
+<b>Turn raw documents into actionable insights — instantly.</b>
+
+<br/><br/>
+
+<a href="https://verbiq.pages.dev"><strong>🚀 Try Live Demo</strong></a>
+
+</div>
 
 ![AWS](https://img.shields.io/badge/AWS-Serverless-orange)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
