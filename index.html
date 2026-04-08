@@ -11,28 +11,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Verbiq - AI Text Analysis</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root {
-  --orange:      #e67e22;
-  --orange-dark: #d35400;
-  --orange-light:#f39c12;
-  --navy:        #1a1a2e;
-  --navy-light:  #2c2c54;
-  --bg:          #eef2ff;
-  --card:        rgba(255,255,255,0.92);
-  --surface:     #f8f9fa;
-  --border:      #e5e7eb;
-  --text:        #111827;
-  --muted:       #6b7280;
-  --green:       #27ae60;
-  --red:         #e74c3c;
-  --blue:        #3498db;
-  --shadow:      0 10px 40px rgba(0,0,0,0.08);
-  --radius:      14px;
-  --transition:  0.25s ease;
+  --orange:       #e67e22;
+  --orange-dark:  #d35400;
+  --orange-light: #f39c12;
+  --navy:         #1a1a2e;
+  --navy-light:   #2c2c54;
+  --bg:           #eef2ff;
+  --card:         rgba(255,255,255,0.92);
+  --surface:      #f8f9fa;
+  --border:       #e5e7eb;
+  --text:         #111827;
+  --muted:        #6b7280;
+  --green:        #27ae60;
+  --red:          #e74c3c;
+  --blue:         #3498db;
+  --shadow:       0 10px 40px rgba(0,0,0,0.08);
+  --radius:       14px;
+  --transition:   0.25s ease;
 }
 
 [data-theme="dark"] {
@@ -59,6 +60,7 @@ body {
   background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
 }
 
+/* ── Container ── */
 .container {
   width: 100%;
   max-width: 740px;
@@ -72,7 +74,7 @@ body {
   transition: background var(--transition), border-color var(--transition);
 }
 
-/* Header */
+/* ── Header ── */
 .header { text-align: center; margin-bottom: 28px; position: relative; }
 
 .theme-toggle {
@@ -91,7 +93,6 @@ body {
   transition: color var(--transition);
 }
 [data-theme="dark"] .logo { color: #f1f5f9; }
-
 .logo span {
   background: linear-gradient(135deg, var(--orange), var(--orange-light));
   -webkit-background-clip: text;
@@ -100,15 +101,14 @@ body {
 }
 
 .tagline { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
-
-.badges { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; }
-.badge {
+.badges  { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; }
+.badge   {
   background: var(--surface); border-radius: 20px;
   padding: 4px 12px; font-size: 11px;
   color: var(--muted); border: 1px solid var(--border);
 }
 
-/* Upload */
+/* ── Upload Area ── */
 .upload-area {
   border: 2px dashed var(--border);
   border-radius: 12px; padding: 40px 24px;
@@ -118,28 +118,23 @@ body {
   animation: pulse-border 3s ease-in-out infinite;
   transition: all var(--transition);
 }
-
 @keyframes pulse-border {
   0%, 100% { border-color: var(--border); }
   50%       { border-color: var(--orange); }
 }
-
 .upload-area:hover, .upload-area.dragover {
-  border-color: var(--orange);
-  background: #fff8f0;
+  border-color: var(--orange); background: #fff8f0;
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(230,126,34,0.12);
   animation: none;
 }
-
 [data-theme="dark"] .upload-area:hover,
 [data-theme="dark"] .upload-area.dragover { background: #1e1b16; }
 
-.upload-icon { font-size: 44px; margin-bottom: 10px; pointer-events: none; }
+.upload-icon  { font-size: 44px; margin-bottom: 10px; pointer-events: none; }
 .upload-area h3 { color: var(--text); font-size: 16px; font-weight: 600; margin-bottom: 6px; pointer-events: none; }
 .upload-area p  { color: var(--muted); font-size: 13px; pointer-events: none; }
 .allowed { margin-top: 10px; font-size: 11px; color: var(--orange); font-weight: 600; pointer-events: none; }
-
 .file-type-icons { display: flex; justify-content: center; gap: 16px; margin-top: 14px; pointer-events: none; }
 .file-type-icon  { font-size: 22px; opacity: 0.45; }
 
@@ -148,7 +143,7 @@ body {
   width: 100%; height: 100%; opacity: 0; cursor: pointer;
 }
 
-/* File info */
+/* ── File Info ── */
 .file-info {
   background: var(--surface); border-radius: 10px;
   padding: 12px 16px; margin-bottom: 10px;
@@ -156,8 +151,8 @@ body {
   border: 1px solid var(--border);
 }
 .file-info.visible { display: flex; }
-.file-info .name { font-size: 13px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file-info .size { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.file-info .name   { font-size: 13px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-info .size   { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .file-info .remove {
   cursor: pointer; color: var(--red); font-size: 18px;
   font-weight: bold; background: none; border: none; padding: 0 4px;
@@ -165,27 +160,81 @@ body {
 }
 .file-info .remove:hover { transform: scale(1.2); }
 
-/* Progress */
-.progress-container { display: none; margin: 12px 0; }
-.progress-container.visible { display: block; }
-.progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-.progress-bar-bg { background: var(--border); border-radius: 10px; height: 10px; overflow: hidden; }
-.progress-bar {
-  height: 100%; border-radius: 10px;
-  background: linear-gradient(90deg, var(--orange), var(--orange-light));
-  width: 0%; transition: width 0.5s ease;
-  position: relative; overflow: hidden;
+/* ── AI Progress Panel ── */
+.ai-progress {
+  display: none; background: var(--navy);
+  border-radius: 12px; padding: 20px 24px;
+  margin: 14px 0; border: 1px solid var(--navy-light);
+  overflow: hidden; position: relative;
 }
-.progress-bar::after {
+.ai-progress.visible { display: block; }
+
+/* scanning line sweep */
+.ai-progress::before {
   content: '';
   position: absolute; top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-  animation: shimmer 1.4s infinite;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(230,126,34,0.06), transparent);
+  animation: sweep 2.5s ease-in-out infinite;
+}
+@keyframes sweep { 0% { left:-100%; } 100% { left:200%; } }
+
+.ai-progress-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.ai-brain { font-size: 20px; animation: pulse-brain 1.5s ease-in-out infinite; }
+@keyframes pulse-brain { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+.ai-progress-title {
+  font-size: 13px; font-weight: 700; color: white; flex: 1;
+}
+.ai-step-counter { font-size: 11px; color: #94a3b8; }
+
+.ai-steps { display: flex; flex-direction: column; gap: 8px; }
+.ai-step  {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: #64748b;
+  transition: color 0.3s ease;
+}
+.ai-step.active  { color: var(--orange-light); }
+.ai-step.done    { color: #4ade80; }
+.ai-step.waiting { color: #334155; }
+
+.ai-step-icon { font-size: 14px; width: 20px; text-align: center; }
+.ai-step-text { flex: 1; }
+.ai-step-dot  {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+.ai-step.active .ai-step-dot {
+  animation: blink 0.8s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+
+.ai-bar-wrap { margin-top: 14px; }
+.ai-bar-bg   {
+  background: #1e293b; border-radius: 10px;
+  height: 6px; overflow: hidden;
+}
+.ai-bar {
+  height: 100%; border-radius: 10px;
+  background: linear-gradient(90deg, var(--orange), var(--orange-light));
+  width: 0%; transition: width 0.6s ease;
+  position: relative; overflow: hidden;
+}
+.ai-bar::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 1.2s infinite;
 }
 @keyframes shimmer { 0% { left:-100%; } 100% { left:200%; } }
+.ai-bar-label {
+  font-size: 11px; color: #94a3b8;
+  margin-top: 6px; text-align: right;
+}
 
-/* Buttons */
+/* ── Buttons ── */
 .btn {
   width: 100%; padding: 14px; border: none;
   border-radius: 10px; font-size: 15px; font-weight: 700;
@@ -204,7 +253,6 @@ body {
   transform: translateY(-1px);
 }
 .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; box-shadow: none; }
-
 .btn-secondary { background: var(--navy); color: white; }
 .btn-secondary:hover { background: var(--navy-light); transform: translateY(-1px); }
 [data-theme="dark"] .btn-secondary { background: var(--navy-light); }
@@ -212,7 +260,7 @@ body {
 .download-bar { display: flex; gap: 10px; margin-top: 20px; }
 @media (max-width: 480px) { .download-bar { flex-direction: column; } }
 
-/* Status */
+/* ── Status ── */
 .status {
   margin-top: 14px; padding: 13px 16px; border-radius: 10px;
   font-size: 13px; text-align: center; display: none; line-height: 1.6;
@@ -222,17 +270,16 @@ body {
 .status.success { background: #eafaf1; color: var(--green);  border-color: #a8e6c3; }
 .status.error   { background: #fdf2f2; color: var(--red);    border-color: #f5c6cb; }
 .status.loading { background: #fff4e5; color: var(--orange); border-color: #fcd9a8; }
-
 [data-theme="dark"] .status.success { background: #0d2318; border-color: #27ae60; }
 [data-theme="dark"] .status.error   { background: #2d0d0d; border-color: #e74c3c; }
 [data-theme="dark"] .status.loading { background: #2d1b08; border-color: #e67e22; }
 
-/* Results */
+/* ── Results ── */
 .results-panel { display: none; margin-top: 28px; border-top: 2px solid var(--border); padding-top: 24px; }
 .results-panel.visible { display: block; }
 .results-title { font-size: 18px; color: var(--text); margin-bottom: 20px; text-align: center; font-weight: 700; }
 
-/* Stat cards */
+/* ── Stat Cards ── */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -241,15 +288,36 @@ body {
 .stat-card {
   background: var(--surface); border-radius: 12px;
   padding: 18px 14px; text-align: center;
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--orange);
+  border: 1px solid var(--border); border-left: 4px solid var(--orange);
   transition: transform var(--transition), box-shadow var(--transition);
+  cursor: default;
 }
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
 .stat-value { font-size: 26px; font-weight: 800; color: var(--text); }
 .stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
 
-/* Sections */
+/* ── Charts ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 14px;
+}
+@media (max-width: 520px) { .charts-row { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--surface); border-radius: 12px;
+  padding: 16px; border: 1px solid var(--border);
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.chart-card.visible { opacity: 1; transform: translateY(0); }
+.chart-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;
+}
+.chart-wrap { position: relative; height: 180px; }
+
+/* ── Sections ── */
 .section {
   background: var(--surface); border-radius: 12px;
   padding: 18px; margin-bottom: 14px;
@@ -263,7 +331,7 @@ body {
   margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px;
 }
 
-/* Language */
+/* ── Language ── */
 .language-badge {
   display: inline-block; background: var(--navy);
   color: white; border-radius: 20px;
@@ -271,23 +339,23 @@ body {
 }
 [data-theme="dark"] .language-badge { background: var(--navy-light); }
 
-/* Gauge */
+/* ── Gauge ── */
 .gauge-container { display: flex; align-items: center; gap: 20px; }
-.gauge-wrap { position: relative; width: 110px; height: 64px; flex-shrink: 0; }
-.gauge-svg  { width: 110px; height: 64px; }
-.gauge-text { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
+.gauge-wrap  { position: relative; width: 110px; height: 64px; flex-shrink: 0; }
+.gauge-svg   { width: 110px; height: 64px; }
+.gauge-text  { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
 .gauge-score { font-size: 18px; font-weight: 800; color: var(--text); }
 .gauge-max   { font-size: 10px; color: var(--muted); }
 .gauge-info  { flex: 1; }
 .gauge-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .gauge-desc  { font-size: 12px; color: var(--muted); }
 
-/* Summary */
+/* ── Summary typing ── */
 .summary-box {
   background: var(--card); border-radius: 10px;
-  padding: 16px 16px 16px 16px; font-size: 14px;
-  color: var(--text); line-height: 1.8;
-  border-left: 4px solid var(--blue); position: relative;
+  padding: 16px; font-size: 14px; color: var(--text);
+  line-height: 1.8; border-left: 4px solid var(--blue);
+  position: relative; min-height: 60px;
 }
 .copy-btn {
   position: absolute; top: 10px; right: 10px;
@@ -298,9 +366,17 @@ body {
 }
 .copy-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
 
-/* Tags */
+.typing-cursor {
+  display: inline-block; width: 2px; height: 14px;
+  background: var(--orange); margin-left: 2px;
+  animation: cursor-blink 0.7s ease-in-out infinite;
+  vertical-align: middle;
+}
+@keyframes cursor-blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+/* ── Tags ── */
 .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.tag {
+.tag  {
   background: #fff3e0; color: var(--orange);
   border: 1px solid var(--orange); border-radius: 20px;
   padding: 5px 13px; font-size: 12px; font-weight: 500;
@@ -309,32 +385,30 @@ body {
 .tag:hover { transform: scale(1.06); }
 .tag small  { color: var(--muted); font-size: 10px; margin-left: 4px; }
 .tag.skill  { background: #e8f4f8; color: var(--blue); border-color: var(--blue); }
-
 [data-theme="dark"] .tag       { background: #2d1b08; }
 [data-theme="dark"] .tag.skill { background: #0d1f2d; }
 
-/* CV Panel */
+/* ── CV Panel ── */
 .cv-panel {
   background: linear-gradient(135deg, #eafaf1, #d5f5e3);
   border-radius: 12px; padding: 20px; border-left: 4px solid var(--green);
 }
 [data-theme="dark"] .cv-panel { background: linear-gradient(135deg, #0d2318, #0a1f14); }
-
 .cv-avatar {
   width: 52px; height: 52px; border-radius: 50%;
   background: linear-gradient(135deg, var(--green), #2ecc71);
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; font-weight: 800; color: white; margin-bottom: 14px;
 }
-.cv-row { display: flex; gap: 12px; margin-bottom: 8px; }
+.cv-row   { display: flex; gap: 12px; margin-bottom: 8px; }
 .cv-label { font-weight: 700; color: var(--muted); text-transform: uppercase; font-size: 10px; min-width: 74px; padding-top: 1px; letter-spacing: 0.5px; }
 .cv-value { color: var(--text); flex: 1; font-size: 13px; }
 
-/* Footer */
+/* ── Footer ── */
 .footer { text-align: center; margin-top: 28px; font-size: 12px; color: var(--muted); line-height: 1.8; }
 .footer strong { color: var(--orange); }
 
-/* Toast */
+/* ── Toast ── */
 .toast {
   position: fixed; bottom: 24px; left: 50%;
   transform: translateX(-50%) translateY(80px);
@@ -347,7 +421,7 @@ body {
 }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-/* Retry */
+/* ── Retry ── */
 .retry-btn {
   display: inline-block; margin-top: 8px;
   background: var(--red); color: white; border: none;
@@ -365,6 +439,7 @@ body {
 
 <div class="container">
 
+  <!-- Header -->
   <div class="header">
     <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
     <div class="logo">Ver<span>biq</span></div>
@@ -379,6 +454,7 @@ body {
     </div>
   </div>
 
+  <!-- Upload -->
   <div class="upload-area" id="dropZone">
     <div class="upload-icon">📂</div>
     <h3>Drag &amp; Drop your document here</h3>
@@ -392,6 +468,7 @@ body {
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx"/>
   </div>
 
+  <!-- File Info -->
   <div class="file-info" id="fileInfo">
     <span>📄</span>
     <span class="name" id="fileName">No file selected</span>
@@ -399,36 +476,65 @@ body {
     <button class="remove" onclick="removeFile()">✕</button>
   </div>
 
-  <div class="progress-container" id="progressContainer">
-    <div class="progress-label" id="progressLabel">Processing...</div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar" id="progressBar"></div>
+  <!-- AI Progress Panel -->
+  <div class="ai-progress" id="aiProgress">
+    <div class="ai-progress-header">
+      <span class="ai-brain">🧠</span>
+      <span class="ai-progress-title">Verbiq AI is analysing your document</span>
+      <span class="ai-step-counter" id="aiStepCounter">0 / 5</span>
+    </div>
+    <div class="ai-steps" id="aiSteps"></div>
+    <div class="ai-bar-wrap">
+      <div class="ai-bar-bg">
+        <div class="ai-bar" id="aiBar"></div>
+      </div>
+      <div class="ai-bar-label" id="aiBarLabel">0%</div>
     </div>
   </div>
 
+  <!-- Analyse Button -->
   <button class="btn btn-primary" id="uploadBtn" onclick="uploadAndAnalyse()" disabled>
     🔍 Analyse Document
   </button>
 
+  <!-- Status -->
   <div class="status" id="status"></div>
 
+  <!-- Results -->
   <div class="results-panel" id="resultsPanel">
     <div class="results-title">📊 Analysis Results</div>
+
+    <!-- Stat Cards -->
     <div class="stats-grid" id="statsGrid"></div>
 
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-card" id="chartCardDonut">
+        <div class="chart-title">📊 Word Composition</div>
+        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      </div>
+      <div class="chart-card" id="chartCardBar">
+        <div class="chart-title">🔑 Top Keywords</div>
+        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Language -->
     <div class="section" id="secLanguage">
       <h3>🌍 Detected Language</h3>
       <span class="language-badge" id="languageBadge"></span>
     </div>
 
+    <!-- Readability -->
     <div class="section" id="secReadability">
       <h3>📖 Readability</h3>
       <div class="gauge-container">
         <div class="gauge-wrap">
           <svg class="gauge-svg" viewBox="0 0 110 64">
             <path d="M10,58 A45,45 0 0,1 100,58" fill="none" stroke="#e5e7eb" stroke-width="10" stroke-linecap="round"/>
-            <path id="gaugePath" d="M10,58 A45,45 0 0,1 100,58" fill="none" stroke="#e67e22" stroke-width="10"
-              stroke-linecap="round" stroke-dasharray="141.4" stroke-dashoffset="141.4"
+            <path id="gaugePath" d="M10,58 A45,45 0 0,1 100,58" fill="none" stroke="#e67e22"
+              stroke-width="10" stroke-linecap="round"
+              stroke-dasharray="141.4" stroke-dashoffset="141.4"
               style="transition: stroke-dashoffset 1.2s ease, stroke 0.5s ease;"/>
           </svg>
           <div class="gauge-text">
@@ -443,19 +549,22 @@ body {
       </div>
     </div>
 
+    <!-- Summary -->
     <div class="section" id="secSummary">
       <h3>📝 AI Summary</h3>
       <div class="summary-box">
         <button class="copy-btn" onclick="copySummary()">📋 Copy</button>
-        <span id="summaryText"></span>
+        <span id="summaryText"></span><span class="typing-cursor" id="typingCursor" style="display:none;"></span>
       </div>
     </div>
 
+    <!-- Keywords Tags -->
     <div class="section" id="secKeywords">
-      <h3>🔑 Top Keywords</h3>
+      <h3>🏷️ Keyword Tags</h3>
       <div class="tags" id="keywordsContainer"></div>
     </div>
 
+    <!-- CV -->
     <div class="section" id="cvSection" style="display:none;">
       <h3>👤 CV Profile Detected</h3>
       <div class="cv-panel" id="cvPanel"></div>
@@ -475,13 +584,14 @@ body {
 </div>
 <script>
 
+// ── Config ───────────────────────────────────────────────
 const CONFIG = {
-  UPLOAD_URL:      'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/upload',
-  ANALYSE_URL:     'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/analyse',
-  DOWNLOAD_URL:    'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/download',
-  MAX_FILE_MB:     10,
-  ALLOWED_EXTS:    ['.txt', '.pdf', '.docx'],
-  FETCH_TIMEOUT:   30000,
+  UPLOAD_URL:    'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/upload',
+  ANALYSE_URL:   'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/analyse',
+  DOWNLOAD_URL:  'https://6tpmjg4qa4.execute-api.eu-west-3.amazonaws.com/prod/download',
+  MAX_FILE_MB:   10,
+  ALLOWED_EXTS:  ['.txt', '.pdf', '.docx'],
+  FETCH_TIMEOUT: 30000,
   CONTENT_TYPES: {
     txt:  'text/plain',
     pdf:  'application/pdf',
@@ -489,17 +599,28 @@ const CONFIG = {
   }
 };
 
-let selectedFile = null;
-let reportKey    = null;
+// ── AI Progress Steps ────────────────────────────────────
+const AI_STEPS = [
+  { icon: '📡', text: 'Requesting secure upload channel...' },
+  { icon: '📤', text: 'Uploading document to secure storage...' },
+  { icon: '🔍', text: 'Scanning document structure...' },
+  { icon: '🧠', text: 'Extracting language patterns and keywords...' },
+  { icon: '✍️', text: 'Generating AI summary...' }
+];
 
-// Theme
+// ── State ────────────────────────────────────────────────
+let selectedFile  = null;
+let reportKey     = null;
+let donutInstance = null;
+let barInstance   = null;
+
+// ── Theme ────────────────────────────────────────────────
 function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
   document.getElementById('themeBtn').textContent = isDark ? '🌙 Dark' : '☀️ Light';
   localStorage.setItem('verbiq-theme', isDark ? 'light' : 'dark');
 }
-
 (function applyStoredTheme() {
   const saved = localStorage.getItem('verbiq-theme');
   if (saved === 'dark') {
@@ -508,7 +629,7 @@ function toggleTheme() {
   }
 })();
 
-// Fetch with timeout
+// ── Fetch with Timeout ───────────────────────────────────
 function fetchWithTimeout(url, options) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
@@ -516,12 +637,12 @@ function fetchWithTimeout(url, options) {
     .finally(() => clearTimeout(id));
 }
 
-// File input
+// ── File Input ───────────────────────────────────────────
 document.getElementById('fileInput').addEventListener('change', function(e) {
   if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
 });
 
-// Drag and drop
+// ── Drag & Drop ──────────────────────────────────────────
 const dropZone = document.getElementById('dropZone');
 ['dragenter','dragover','dragleave','drop'].forEach(evt => {
   document.body.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
@@ -535,22 +656,19 @@ dropZone.addEventListener('drop', e => {
   if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
 });
 
-// Handle file selection
+// ── Handle File Selection ────────────────────────────────
 function handleFileSelect(file) {
   if (!file) return;
   const ext = '.' + file.name.split('.').pop().toLowerCase();
-
   if (!CONFIG.ALLOWED_EXTS.includes(ext)) {
     showStatus(`❌ Invalid file type "${ext}". Allowed: ${CONFIG.ALLOWED_EXTS.join(', ')}`, 'error');
     return;
   }
-
   const maxBytes = CONFIG.MAX_FILE_MB * 1024 * 1024;
   if (file.size > maxBytes) {
     showStatus(`❌ File too large (${formatSize(file.size)}). Maximum: ${CONFIG.MAX_FILE_MB}MB.`, 'error');
     return;
   }
-
   if (ext === '.pdf') {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -584,7 +702,7 @@ function removeFile() {
   document.getElementById('fileInput').value = '';
   document.getElementById('fileInfo').classList.remove('visible');
   document.getElementById('uploadBtn').disabled = true;
-  document.getElementById('progressContainer').classList.remove('visible');
+  document.getElementById('aiProgress').classList.remove('visible');
   document.getElementById('resultsPanel').classList.remove('visible');
   hideStatus();
 }
@@ -594,21 +712,59 @@ function analyseAnother() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Main flow
+// ── AI Progress UI ───────────────────────────────────────
+function initAiSteps() {
+  document.getElementById('aiSteps').innerHTML = AI_STEPS.map((s, i) => `
+    <div class="ai-step waiting" id="aiStep${i}">
+      <span class="ai-step-icon">${s.icon}</span>
+      <span class="ai-step-text">${s.text}</span>
+      <span class="ai-step-dot"></span>
+    </div>`).join('');
+  setAiProgress(0, 0);
+}
+
+function setAiStep(index) {
+  AI_STEPS.forEach((_, i) => {
+    const el = document.getElementById(`aiStep${i}`);
+    if (!el) return;
+    el.className = 'ai-step ' + (i < index ? 'done' : i === index ? 'active' : 'waiting');
+    if (i < index) el.querySelector('.ai-step-icon').textContent = '✅';
+    else           el.querySelector('.ai-step-icon').textContent = AI_STEPS[i].icon;
+  });
+  document.getElementById('aiStepCounter').textContent = `${index} / ${AI_STEPS.length}`;
+}
+
+function setAiProgress(percent, stepIndex) {
+  document.getElementById('aiBar').style.width   = percent + '%';
+  document.getElementById('aiBarLabel').textContent = percent + '%';
+  setAiStep(stepIndex);
+}
+
+function showAiProgress() {
+  document.getElementById('aiProgress').classList.add('visible');
+  initAiSteps();
+}
+
+function hideAiProgress() {
+  document.getElementById('aiProgress').classList.remove('visible');
+}
+
+// ── Main Upload & Analyse ────────────────────────────────
 async function uploadAndAnalyse() {
   if (!selectedFile) { showStatus('❌ Please select a file first.', 'error'); return; }
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled    = true;
   btn.textContent = '⏳ Analysing...';
+  hideStatus();
+  showAiProgress();
 
   const ext         = selectedFile.name.split('.').pop().toLowerCase();
   const contentType = CONFIG.CONTENT_TYPES[ext] || 'application/octet-stream';
 
   try {
-    showStatus('⏳ Step 1/3 — Requesting secure upload URL...', 'loading');
-    showProgress('Requesting upload URL...', 15);
-
+    // Step 1
+    setAiProgress(10, 0);
     const uploadUrlRes = await fetchWithTimeout(CONFIG.UPLOAD_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -618,9 +774,8 @@ async function uploadAndAnalyse() {
     if (!uploadUrlRes.ok || !uploadData.upload_url)
       throw new Error(uploadData.error || `Upload URL error: ${uploadUrlRes.status}`);
 
-    showStatus('⏳ Step 2/3 — Uploading your document...', 'loading');
-    showProgress('Uploading...', 45);
-
+    // Step 2
+    setAiProgress(30, 1);
     const s3Res = await fetchWithTimeout(uploadData.upload_url, {
       method: 'PUT',
       headers: { 'Content-Type': contentType },
@@ -628,9 +783,12 @@ async function uploadAndAnalyse() {
     });
     if (!s3Res.ok) throw new Error(`S3 upload failed: ${s3Res.status}`);
 
-    showStatus('⏳ Step 3/3 — Analysing your document...', 'loading');
-    showProgress('Analysing...', 72);
+    // Step 3
+    setAiProgress(50, 2);
+    await delay(600);
 
+    // Step 4
+    setAiProgress(70, 3);
     const analyseRes = await fetchWithTimeout(CONFIG.ANALYSE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -639,14 +797,21 @@ async function uploadAndAnalyse() {
     const analysis = await analyseRes.json();
     if (!analyseRes.ok) throw new Error(analysis.error || `Analysis error: ${analyseRes.status}`);
 
+    // Step 5
+    setAiProgress(90, 4);
+    await delay(500);
+    setAiProgress(100, 5);
+    await delay(400);
+
     reportKey = analysis.report_key;
-    showProgress('Complete! ✅', 100);
+    hideAiProgress();
     showStatus(`✅ <strong>${escapeHtml(selectedFile.name)}</strong> analysed successfully!`, 'success');
     renderResults(analysis);
     btn.textContent = '🔍 Analyse Document';
     btn.disabled    = false;
 
   } catch (err) {
+    hideAiProgress();
     const isTimeout = err.name === 'AbortError';
     const msg = isTimeout
       ? '⏱️ Request timed out. The server took too long to respond.'
@@ -659,7 +824,7 @@ async function uploadAndAnalyse() {
   }
 }
 
-// Download
+// ── Download ─────────────────────────────────────────────
 async function downloadReport() {
   if (!reportKey) { showToast('No report available yet.'); return; }
   try {
@@ -679,15 +844,15 @@ async function downloadReport() {
   } catch (err) { showToast(`Download failed: ${err.message}`); }
 }
 
-// Render results
+// ── Render Results ───────────────────────────────────────
 function renderResults(a) {
   const panel = document.getElementById('resultsPanel');
 
-  // Stat cards
+  // Stat cards with count-up
   const stats = [
-    { value: a.word_count,      label: 'Words'       },
-    { value: a.character_count, label: 'Characters'  },
-    { value: a.unique_words,    label: 'Unique Words' },
+    { value: a.word_count,      label: 'Words'        },
+    { value: a.character_count, label: 'Characters'   },
+    { value: a.unique_words,    label: 'Unique Words'  },
     { value: a.reading_time,    label: 'Reading Time', noAnim: true }
   ];
   document.getElementById('statsGrid').innerHTML = stats.map(s => `
@@ -714,12 +879,9 @@ function renderResults(a) {
     const path = document.getElementById('gaugePath');
     path.style.strokeDashoffset = 141.4 - (141.4 * score / 100);
     path.style.stroke           = color;
-  }, 100);
+  }, 200);
 
-  // Summary
-  document.getElementById('summaryText').textContent = a.summary;
-
-  // Keywords
+  // Keywords tags
   document.getElementById('keywordsContainer').innerHTML = a.keywords
     .map(k => `<span class="tag">${escapeHtml(k.word)}<small>${k.count}x</small></span>`).join('');
 
@@ -747,13 +909,19 @@ function renderResults(a) {
     cvSection.style.display = 'none';
   }
 
-  // Show panel + sequential fade-in
+  // Show panel
   panel.classList.add('visible');
+
+  // Sequential section fade-in
   ['secLanguage','secReadability','secSummary','secKeywords','cvSection'].forEach((id, i) => {
     const el = document.getElementById(id);
     if (!el || el.style.display === 'none') return;
-    setTimeout(() => el.classList.add('visible'), 150 * (i + 1));
+    setTimeout(() => el.classList.add('visible'), 160 * (i + 1));
   });
+
+  // Chart cards fade-in
+  setTimeout(() => document.getElementById('chartCardDonut').classList.add('visible'), 100);
+  setTimeout(() => document.getElementById('chartCardBar').classList.add('visible'),   280);
 
   // Count-up animation
   document.querySelectorAll('.stat-value[data-target]').forEach(el => {
@@ -768,16 +936,139 @@ function renderResults(a) {
     }, 30);
   });
 
+  // Typing effect for summary
+  setTimeout(() => typewriterEffect(a.summary || ''), 500);
+
+  // Charts
+  setTimeout(() => {
+    renderDonutChart(a);
+    renderBarChart(a);
+  }, 400);
+
   panel.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Copy summary
+// ── Typewriter Effect ────────────────────────────────────
+function typewriterEffect(text) {
+  const el     = document.getElementById('summaryText');
+  const cursor = document.getElementById('typingCursor');
+  el.textContent  = '';
+  cursor.style.display = 'inline-block';
+  let i = 0;
+  const speed = Math.max(18, Math.min(40, Math.floor(3000 / text.length)));
+  const timer = setInterval(() => {
+    el.textContent += text[i];
+    i++;
+    if (i >= text.length) {
+      clearInterval(timer);
+      setTimeout(() => { cursor.style.display = 'none'; }, 1200);
+    }
+  }, speed);
+}
+
+// ── Donut Chart ──────────────────────────────────────────
+function renderDonutChart(a) {
+  const isDark   = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#f1f5f9' : '#111827';
+  const unique   = a.unique_words || 0;
+  const total    = a.word_count   || 1;
+  const repeated = Math.max(0, total - unique);
+
+  if (donutInstance) { donutInstance.destroy(); donutInstance = null; }
+
+  donutInstance = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Unique Words', 'Repeated Words'],
+      datasets: [{
+        data: [unique, repeated],
+        backgroundColor: ['#e67e22', '#3498db'],
+        borderColor: isDark ? '#16213e' : '#ffffff',
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      animation: { animateRotate: true, duration: 1000 },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: textColor,
+            font: { family: 'Inter', size: 11 },
+            boxWidth: 10, padding: 10
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${Math.round(ctx.parsed / total * 100)}%)`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Bar Chart ────────────────────────────────────────────
+function renderBarChart(a) {
+  const isDark    = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#f1f5f9' : '#111827';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const keywords  = (a.keywords || []).slice(0, 6);
+
+  if (barInstance) { barInstance.destroy(); barInstance = null; }
+
+  barInstance = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: keywords.map(k => k.word),
+      datasets: [{
+        label: 'Frequency',
+        data: keywords.map(k => k.count),
+        backgroundColor: [
+          '#e67e22','#f39c12','#3498db',
+          '#27ae60','#9b59b6','#e74c3c'
+        ],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 900, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.parsed.y} occurrences` }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: textColor, font: { family: 'Inter', size: 11 } },
+          grid:  { color: gridColor }
+        },
+        y: {
+          ticks: { color: textColor, font: { family: 'Inter', size: 11 }, stepSize: 1 },
+          grid:  { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+// ── Copy Summary ─────────────────────────────────────────
 function copySummary() {
   navigator.clipboard.writeText(document.getElementById('summaryText').textContent)
     .then(() => showToast('✅ Summary copied to clipboard!'));
 }
 
-// Helpers
+// ── Helpers ──────────────────────────────────────────────
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 function showStatus(message, type) {
   const el = document.getElementById('status');
   el.innerHTML = message;
@@ -785,16 +1076,14 @@ function showStatus(message, type) {
 }
 function hideStatus() {
   document.getElementById('status').className = 'status';
-  document.getElementById('progressContainer').classList.remove('visible');
 }
 function showProgress(label, percent) {
-  document.getElementById('progressContainer').classList.add('visible');
-  document.getElementById('progressLabel').textContent = label;
-  document.getElementById('progressBar').style.width   = percent + '%';
+  document.getElementById('progressContainer') &&
+  (document.getElementById('progressContainer').classList.add('visible'));
 }
 function formatSize(bytes) {
-  if (bytes < 1024)         return bytes + ' B';
-  if (bytes < 1024 * 1024)  return (bytes / 1024).toFixed(1) + ' KB';
+  if (bytes < 1024)        return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 function escapeHtml(str) {
